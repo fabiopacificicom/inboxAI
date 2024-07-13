@@ -9,22 +9,29 @@ use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use PDO;
 
 class MailboxConnectForm extends Component
 {
 
+    // mailbox connector settings
     public $host = 'mail.fabiopacifici.com';
     public $port = '993';
     public $encryption = 'ssl';
     public $username;
     public $password;
     public $filter = 'day'; // Default filter
+    // messages processing properties
     public $reply = [];
     public $message;
     public $messages = [];
     public $fetching = false;
+    // model processor properties
+    public $models;
+    public $selectedModel;
+    public $assistantSystem;
 
-
+    // validation
     protected $rules = [
         'host' => 'required',
         'port' => 'required|numeric',
@@ -40,14 +47,18 @@ class MailboxConnectForm extends Component
         return view('livewire.ai-reply.mailbox-connect-form');
     }
 
-    public function boot(){
+    public function boot()
+    {
+        // mailbox
         $this->username = env('MAIL_FROM_ADDRESS');
+        $this->selectedModel = config('responder.assistant.model');
+        $this->assistantSystem = config('responder.assistant.system');
+        $this->models = $this->getModels();
+        //dd($this->models);
     }
 
     public function mount()
     {
-
-        $this->connectMailbox();
         $this->password = env('AI_MAIL_PASSWORD');
     }
 
@@ -58,6 +69,12 @@ class MailboxConnectForm extends Component
             $this->fetching = true;
             $this->connectMailbox();
         }
+    }
+
+    public function getModels(){
+        $response = Http::get(config('responder.assistant.tags'));
+        return $response->json();
+
     }
 
     public function connectMailbox()
@@ -146,9 +163,8 @@ class MailboxConnectForm extends Component
     }
 
 
-    public function getAnswer($id)
+    function setMessage($id)
     {
-
         Log::info('looking for the message by its id' . $id);
         foreach ($this->messages as $message) {
             if (in_array($id, $message)) {
@@ -157,26 +173,29 @@ class MailboxConnectForm extends Component
                 break;
             }
         }
+    }
+
+    /**
+     * generates reply for a givem message
+     *
+     * @param string $messageId the id of the message retrieved from the imap server
+     * @return void
+     */
+    public function generateReplyFor($messageId): void
+    {
+
+        $this->setMessage($messageId);
 
         //dd($this->message);
         // prepare the payload
         $payload = [
-            'model' => 'llama3:latest',
+            'model' => $this->selectedModel,
             'stream' => false,
             'messages' => [
 
                 [
                     'role' => 'system',
-                    'content' => "
-                    You are FabiA. You are Fabio Pacifici's personal assistant.
-                    You manage Fabio's inbox and reply to incoming messages.
-                    You are provided with the message resourse as json object.
-                    Your task is to formulate a reply in the same language of the sender.
-                    You are friendly and professional.
-                    If a reply requires Fabio's instructions simply inform the sender that the enquiry has been forwarded to Fabio and that a response might
-                    be provided at a later time if necessary.
-                    Sign your messages in the following way: 'Regards, FabiA (Fabio Pacifici Assistant)'.
-                    "
+                    'content' => $this->assistantSystem
                 ],
                 [
                     'role' => 'user',
@@ -186,7 +205,7 @@ class MailboxConnectForm extends Component
         ];
 
         //dd($payload);
-        $response = Http::post('http://127.0.0.1:11434/api/chat', $payload);
+        $response = Http::post(config('responder.assistant.server'), $payload);
 
 
         $response->onError(function ($message) {

@@ -6,14 +6,14 @@
         </div>
     @endif
 
-    {{-- Loader --}}
 
-
-    <div x-data="{ open: false }">
+    <div id="settings" x-data="{ open: false }">
         <div class="flex justify-between items-center mb-4">
+
+            {{-- Mailbox settings --}}
             <button @click="open = !open"
                 class="flex items-center gap-2 bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
-                Connection
+                {{ __('Settings') }}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                     class="bi bi-sliders2-vertical" viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
@@ -33,145 +33,178 @@
             </div>
         </div>
 
-        {{-- Email connection form --}}
         <div x-show="open" style="display: none;">
-            <form wire:submit.prevent="connectMailbox" class="md:grid md:grid-cols-2 md:gap-4">
-                <input
-                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-                    type="text" wire:model="host" placeholder="IMAP Host">
-                <input
-                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-                    type="text" wire:model="port" placeholder="Port">
-                <input
-                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-                    type="text" wire:model="encryption" placeholder="Encryption (ssl/tls)">
-                <input
-                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-                    type="email" wire:model="username" placeholder="Email">
-                <input
-                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200 md:col-span-2"
-                    type="password" wire:model="password" placeholder="Password">
-                <button
-                    class="w-full bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 md:col-span-2"
-                    type="submit">Connect</button>
-            </form>
-        </div>
+            <h3 class="text-2xl text-gray-500">AI Assistant settings (ollama) </h3>
+            {{-- Assistant settings --}}
+            <div class="mb-3">
+                <label for="model" class="block text-gray-600">Pick a model</label>
+                <select name="model" id="model" wire:model="selectedModel"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
+                    @forelse ($models['models'] as $model)
+                        <option value="{{ $model['model'] }}"
+                            {{ $model['model'] === $selectedModel ? 'selected' : '' }}>
+                            {{ $model['name'] }}</option>
+                    @empty
+                        <option value="" disabled>no models available</option>
+                    @endforelse
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="system" class="text-gray-600 mt-4 block">Assistant Configuration</label>
+                <textarea class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    wire:model.live="assistantSystem" name="system" id="system" cols="30" rows="10">{{ $assistantSystem }}</textarea>
+                {{-- Email connection form --}}
+            </div>
+
+            <hr class="my-3">
+
+            <div class="mb-3">
+                <h3 class="text-2xl text-gray-500">Mailbox settings (imap) </h3>
+                <form wire:submit.prevent="connectMailbox" class="md:grid md:grid-cols-2 md:gap-4">
+                    <input
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        type="text" wire:model="host" placeholder="IMAP Host">
+                    <input
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        type="text" wire:model="port" placeholder="Port">
+                    <input
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        type="text" wire:model="encryption" placeholder="Encryption (ssl/tls)">
+                    <input
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        type="email" wire:model="username" placeholder="Email">
+                    <input
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200 md:col-span-2"
+                        type="password" wire:model="password" placeholder="Password">
+                    <button
+                        class="w-full bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 md:col-span-2"
+                        type="submit">Connect</button>
+                </form>
+            </div>
+        </div>
 
     </div>
+    {{-- /#settings --}}
 
-    {{-- Reply form --}}
-    @if (array_key_exists('message', $reply) && array_key_exists('content', $reply['message']))
-        <div class="reply my-4">
-            <textarea class="w-full rounded-xxl" name="reply" id="reply" cols="30" rows="10">{!! $reply['message']['content'] !!}</textarea>
-            <button class="bg-gray-800 text-white rounded-2xl">Reply</button>
-        </div>
-    @endif
+    <div id="reply-area">
+        {{-- Reply form --}}
+        @if (array_key_exists('message', $reply) && array_key_exists('content', $reply['message']))
+            <div class="reply my-4">
+                <textarea class="w-full rounded-xxl" name="reply" id="reply" cols="30" rows="10">{!! $reply['message']['content'] !!}</textarea>
+                <button class="bg-gray-800 text-white rounded-2xl">Reply</button>
+            </div>
+        @endif
+    </div>
+    {{-- /#reply-area --}}
 
-    {{-- Messages table --}}
-    @if ($fetching)
-        <div class="loader">
-            Loading ...
-        </div>
-    @else
-        <div class="messages">
+    <div id="inbox-table">
+        {{-- Messages table --}}
+        @if ($fetching)
+            <div class="loader">
+                Loading ...
+            </div>
+        @else
+            <div class="messages">
 
-            @if (session()->has('message'))
-                <div class="alert">{{ session('message') }}</div>
-            @endif
+                @if (session()->has('message'))
+                    <div class="alert">{{ session('message') }}</div>
+                @endif
 
 
-            <hr class="my-8">
+                <hr class="my-8">
 
-            <table>
+                <table>
 
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>
-                            Sender
-                        </th>
-                        <th>Reply To</th>
-                        <th>Subject</th>
-                        <th>Actions</th>
-
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    @forelse ($messages as $message)
+                    <thead>
                         <tr>
-                            <td>
-                                {{ $message['date'] }}
-                            </td>
-                            <td>
-                                {{ $message['sender'] }}
-                                {{ $message['from'] }}
-                            </td>
-                            <td>
-                                {{ Arr::join($message['replyToAddresses'], ',') }}
-                            </td>
-                            <td>
-                                {{ $message['subject'] }}
-                            </td>
-                            <td x-data="{ show: false }">
+                            <th>Date</th>
+                            <th>
+                                Sender
+                            </th>
+                            <th>Reply To</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
 
-                                <button class="p-2 rounded-xxl bg-gray-800 text-white" x-on:click="show = !show">
-                                    view
-                                </button>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @forelse ($messages as $message)
+                            <tr>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
+                                </td>
+                                <td>
+                                    {{ $message['sender'] }}
+                                    {{ $message['from'] }}
+                                </td>
+                                <td>
+                                    {{ Arr::join($message['replyToAddresses'], ',') }}
+                                </td>
+                                <td>
+                                    {{ $message['subject'] }}
+                                </td>
+                                <td x-data="{ show: false }">
+
+                                    <button class="p-2 rounded-xxl bg-gray-800 text-white" x-on:click="show = !show">
+                                        view
+                                    </button>
 
 
-                                <div class="modal-backdrop" x-show="show">
-                                    <div class="modal-card">
+                                    <div class="modal-backdrop" x-show="show">
+                                        <div class="modal-card">
 
-                                        <div class="flex justify-between">
+                                            <div class="flex justify-between">
 
-                                            <button class="p-3 rounded-xl btn bg-gray-800 text-white"
-                                                wire:click="getAnswer('{{ $message['messageId'] }}')">
-                                                Generate Reply
-                                            </button>
-                                            <button class="p-2 text-gray-900" x-on:click="show = !show">
-                                                x
-                                            </button>
-                                        </div>
-
-
-                                        <hr class="my-4">
-                                        <header class="py-4">
-                                            <div>
-                                                messageID: {{ $message['messageId'] }}
+                                                <button class="p-3 rounded-xl btn bg-gray-800 text-white"
+                                                    wire:click="generateReplyFor('{{ $message['messageId'] }}')">
+                                                    Generate Reply
+                                                </button>
+                                                <button class="p-2 text-gray-900" x-on:click="show = !show">
+                                                    x
+                                                </button>
                                             </div>
-                                            <div>
-                                                sender: {{ $message['sender'] }}
+
+
+                                            <hr class="my-4">
+                                            <header class="py-4">
+                                                <div>
+                                                    messageID: {{ $message['messageId'] }}
+                                                </div>
+                                                <div>
+                                                    sender: {{ $message['sender'] }}
+                                                </div>
+
+                                            </header>
+
+                                            <div class="original">
+                                                <h3 class="text-xxl">Original</h3>
+                                                {!! $message['content'] !!}
                                             </div>
 
-                                        </header>
-
-                                        <div class="original">
-                                            <h3 class="text-xxl">Original</h3>
-                                            {!! $message['content'] !!}
                                         </div>
-
                                     </div>
-                                </div>
 
 
-                            </td>
+                                </td>
 
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5">nothing here</td>
-                        </tr>
-                    @endforelse
-                </tbody>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5">nothing here</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
 
-            </table>
+                </table>
 
 
-        </div>
-    @endif
-
+            </div>
+        @endif
+    </div>
+    {{-- /#inbox-table --}}
 
 </div>
