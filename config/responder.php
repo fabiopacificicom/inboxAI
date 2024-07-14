@@ -1,6 +1,14 @@
 <?php
 return [
-    'assistant' => [#
+
+    'imap' => [
+        'username' => env('MAIL_FROM_ADDRESS'),
+        'password' => env('AI_MAIL_PASSWORD'),
+
+    ],
+
+    'assistant' => [
+
         'tags' => 'http://127.0.0.1:11434/api/tags',
         'server' => 'http://127.0.0.1:11434/api/chat',
         'model' => 'llama3:latest',

@@ -30,6 +30,7 @@ class MailboxConnectForm extends Component
     public $models;
     public $selectedModel;
     public $assistantSystem;
+    public $ollamaServerAddress;
 
     // validation
     protected $rules = [
@@ -50,16 +51,19 @@ class MailboxConnectForm extends Component
     public function boot()
     {
         // mailbox
-        $this->username = env('MAIL_FROM_ADDRESS');
+        $this->username = config('responder.imap.username');
+
+        // ollama server settings
         $this->selectedModel = config('responder.assistant.model');
         $this->assistantSystem = config('responder.assistant.system');
         $this->models = $this->getModels();
+        $this->ollamaServerAddress = config('responder.assistant.server');
         //dd($this->models);
     }
 
     public function mount()
     {
-        $this->password = env('AI_MAIL_PASSWORD');
+        $this->password = config('responder.imap.password');
     }
 
 
@@ -85,7 +89,7 @@ class MailboxConnectForm extends Component
         $mailbox = new Mailbox(
             '{' . $this->host . ':' . $this->port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
             $this->username, // Username for the before configured mailbox
-            env('AI_MAIL_PASSWORD'), // Password for the before configured username
+            $this->password, // Password for the before configured username
             storage_path('app'), // Directory, where attachments will be saved (optional)
             'UTF-8', // Server encoding (optional)
             true, // Trim leading/ending whitespaces of IMAP path (optional)
@@ -205,7 +209,7 @@ class MailboxConnectForm extends Component
         ];
 
         //dd($payload);
-        $response = Http::post(config('responder.assistant.server'), $payload);
+        $response = Http::post($this->ollamaServerAddress, $payload);
 
 
         $response->onError(function ($message) {
