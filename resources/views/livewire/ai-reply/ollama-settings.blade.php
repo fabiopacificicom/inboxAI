@@ -1,6 +1,16 @@
 <div>
     {{-- Assistant settings --}}
-    <h3 class="text-2xl text-gray-500">AI Assistant settings (ollama) </h3>
+    <h3 class="text-2xl text-gray-500 mt-4 mb-3">AI Assistant settings (ollama) </h3>
+
+    <div class="mb-3">
+        <label for="ollamaServerAddress" class="block text-gray-600">Ollama Server Address <span class="w-4 h-4 rounded-full inline-block {{!$connectionError ? 'bg-green-500' : 'bg-red-500' }}"></span> </label>
+        <input type="text" wire:model.blur="ollamaServerAddress" name="ollamaServerAddress" id="ollamaServerAddress" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+
+        @if ($connectionError)
+        <div class="text-sm text-red-500">{{$connectionError}}</div>
+        @endif
+    </div>
+
     <div class="mb-3">
         <label for="model" class="block text-gray-600">Pick a model</label>
         <select name="model" id="model" wire:model="selectedModel"

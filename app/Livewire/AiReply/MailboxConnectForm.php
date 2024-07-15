@@ -166,19 +166,6 @@ class MailboxConnectForm extends Component
         }, $mailsIds);
     }
 
-
-    function setMessage($id)
-    {
-        Log::info('looking for the message by its id' . $id);
-        foreach ($this->messages as $message) {
-            if (in_array($id, $message)) {
-
-                $this->message = $message;
-                break;
-            }
-        }
-    }
-
     /**
      * generates reply for a givem message
      *
@@ -222,6 +209,19 @@ class MailboxConnectForm extends Component
         // the reply message array
         $this->reply = $response->json(); // Get the response
 
+    }
+
+
+    public function setMessage($id)
+    {
+        Log::info('looking for the message by its id' . $id);
+        foreach ($this->messages as $message) {
+            if (in_array($id, $message)) {
+
+                $this->message = $message;
+                break;
+            }
+        }
     }
 
     private function getDays()

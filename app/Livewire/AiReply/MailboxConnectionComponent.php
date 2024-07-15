@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\AiReply;
+
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
@@ -44,6 +45,105 @@ class MailboxConnectionComponent extends Component
         $this->password = config('responder.imap.password');
     }
 
+    public function connectMailbox()
+    {
+        $this->validate(); // Ensure this is uncommented to validate inputs
+        $this->fetching = true;
+
+        try {
+            $mailbox = $this->establishMailboxConnection();
+            $mailsIds = $this->searchEmails($mailbox);
+            $this->fetchEmailMessages($mailbox, $mailsIds);
+        } catch (ConnectionException $ex) {
+            $this->handleConnectionException($ex);
+        } finally {
+            if (isset($mailbox)) {
+                $mailbox->disconnect();
+            }
+            $this->fetching = false;
+        }
+    }
+
+    private function establishMailboxConnection()
+    {
+        return new Mailbox(
+            '{' . $this->host . ':' . $this->port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
+            $this->username, // Username for the before configured mailbox
+            $this->password, // Password for the before configured username
+            storage_path('app'), // Directory, where attachments will be saved (optional)
+            'UTF-8', // Server encoding (optional)
+            true, // Trim leading/ending whitespaces of IMAP path (optional)
+            true // Attachment filename mode (optional; false = random filename; true = original filename)
+            // ... existing parameters ...
+        );
+    }
+
+    private function searchEmails($mailbox)
+    {
+        // Get all emails (messages)
+        // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
+        $date = Carbon::now()->subDays($this->getDays())->format('Ymd');
+        //dd($date);
+        $criteria = 'SINCE "' . $date . '"';
+        //dd($criteria);
+        $mailsIds = $mailbox->searchMailbox($criteria);
+        return $mailsIds;
+    }
+
+    private function fetchEmailMessages($mailbox, $mailsIds)
+    {
+
+        if (!$mailsIds) {
+            //dd('here');
+            Log::info('Mailbox is empty');
+
+            return to_route('dashboard')->with('message', 'Mailbox is empty');
+        }
+        // Put the latest email on top of listing
+        rsort($mailsIds);
+
+        // Get the last 15 emails only (@todo make this dynamic)
+        array_splice($mailsIds, 15);
+
+        // Loop through emails one by one
+
+        $messages = array_map(function ($num) use ($mailbox) {
+
+            //dd($mailbox);
+            $head = $mailbox->getMailHeader($num);
+            //dd($head);
+            $markAsSeen = false;
+            $mail = $mailbox->getMail($num, $markAsSeen);
+            $message = [
+                'messageId' => $head->messageId,
+                'isSeen' => $head->isSeen,
+                'isAnswered' => $head->isAnswered,
+                'isRecent' => $head->isRecent,
+                'isFlagged' => $head->isFlagged,
+                'isDeleted' => $head->isDeleted,
+                'isDraft' => $head->isDraft,
+                'subject' => $head->subject,
+                'from' => $head->fromAddress,
+                'sender' => isset($head->fromName) ? $head->fromName : '',
+                'replyToAddresses' => array_keys($head->replyTo),
+                'date' => $head->date,
+                'content' => $mail->textHtml ? $mail->textHtml : $mail->textPlain
+                // Add more fields as needed
+            ];
+            //dd($message);
+            return $message;
+        }, $mailsIds);
+
+        $this->dispatch('mailbox-sync-event', $messages)->to(MessageListComponent::class);
+    }
+
+    private function handleConnectionException($ex)
+    {
+        $message = "IMAP connection failed: " . $ex->getMessage();
+        $this->addError('connection', $message);
+        Log::error($message);
+    }
+
 
     public function updated($property)
     {
@@ -52,54 +152,6 @@ class MailboxConnectionComponent extends Component
             $this->connectMailbox();
         }
     }
-
-    public function connectMailbox()
-    {
-        $this->validate();
-        $this->fetching = true;
-        // Logic to establish IMAP connection and verify credentials
-        $mailbox = new Mailbox(
-            '{' . $this->host . ':' . $this->port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
-            $this->username, // Username for the before configured mailbox
-            $this->password, // Password for the before configured username
-            storage_path('app'), // Directory, where attachments will be saved (optional)
-            'UTF-8', // Server encoding (optional)
-            true, // Trim leading/ending whitespaces of IMAP path (optional)
-            true // Attachment filename mode (optional; false = random filename; true = original filename)
-        );
-        //dd($mailbox);
-
-
-        try {
-            // Get all emails (messages)
-            // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
-            $date = Carbon::now()->subDays($this->getDays())->format('Ymd');
-            //dd($date);
-            $criteria = 'SINCE "' . $date . '"';
-            //dd($criteria);
-            $mailsIds = $mailbox->searchMailbox($criteria);
-            //dd($mailsIds);
-        } catch (ConnectionException $ex) {
-            $message = "IMAP connection failed: " . implode(",", $ex->getErrors('all'));
-            Log::error($message);
-            return back()->with('message', $message);
-        }
-
-        //dd($mailsIds);
-        // If $mailsIds is empty, no emails could be found
-        if (!$mailsIds) {
-            //dd('here');
-            Log::info('Mailbox is empty');
-
-            return to_route('dashboard')->with('message', 'Mailbox is empty');
-        }
-
-        $this->getEmailMessages($mailbox, $mailsIds);
-        //dd($this->messages);
-        $this->fetching = false;
-        $mailbox->disconnect();
-    }
-
     private function getDays()
     {
         return match ($this->filter) {

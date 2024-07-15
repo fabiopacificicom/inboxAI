@@ -1,4 +1,4 @@
-<div id="mailbox-connection-settings" x-data="{ open: false }">
+<div  x-data="{ open: false }">
     <div class="flex justify-between items-center mb-4">
 
         {{-- Mailbox settings --}}
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <div x-show="open" style="display: none;">
+    <div id="settings" x-show="open" style="display: none;" >
 
         <h3 class="text-2xl text-gray-500">Mailbox settings (imap) </h3>
         <div class="mb-3">
@@ -86,5 +86,6 @@
                 </button>
             </form>
         </div>
+
     </div>
 </div>
