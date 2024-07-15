@@ -4,7 +4,7 @@ return [
     'imap' => [
         'username' => env('MAIL_FROM_ADDRESS'),
         'password' => env('AI_MAIL_PASSWORD'),
-
+        'server' => env('AI_MAIL_SERVER')
     ],
 
     'assistant' => [

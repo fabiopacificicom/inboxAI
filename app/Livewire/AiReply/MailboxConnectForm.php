@@ -15,7 +15,7 @@ class MailboxConnectForm extends Component
 {
 
     // mailbox connector settings
-    public $host = 'mail.fabiopacifici.com';
+    public $host;
     public $port = '993';
     public $encryption = 'ssl';
     public $username;
@@ -52,7 +52,7 @@ class MailboxConnectForm extends Component
     {
         // mailbox
         $this->username = config('responder.imap.username');
-
+        $this->host = config('responder.imap.server');
         // ollama server settings
         $this->selectedModel = config('responder.assistant.model');
         $this->assistantSystem = config('responder.assistant.system');

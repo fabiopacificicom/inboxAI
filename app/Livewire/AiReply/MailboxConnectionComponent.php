@@ -14,7 +14,7 @@ class MailboxConnectionComponent extends Component
 
 
     // mailbox connector settings
-    public $host = 'mail.fabiopacifici.com';
+    public $host;
     public $port = '993';
     public $encryption = 'ssl';
     public $username;
@@ -43,6 +43,8 @@ class MailboxConnectionComponent extends Component
         // mailbox
         $this->username = config('responder.imap.username');
         $this->password = config('responder.imap.password');
+        $this->host = config('responder.imap.server');
+
     }
 
     public function connectMailbox()

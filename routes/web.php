@@ -7,7 +7,8 @@ use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/dashboard');
+    //view('welcome');
 });
 
 Route::get('/dashboard', function () {
