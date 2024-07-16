@@ -36,6 +36,10 @@
 
             </button>
 
+            <div>
+                <input type="number" name="limit" id="limit" wire:model.blur="limit" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+            </div>
+
             <div class="">
                 <select wire:model.live="filter"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">

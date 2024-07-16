@@ -20,6 +20,7 @@ class MailboxConnectionComponent extends Component
     public $username;
     public $password;
     public $filter = 'day'; // Default filter
+    public $limit = 15;
     public $fetching = false;
 
 
@@ -55,7 +56,7 @@ class MailboxConnectionComponent extends Component
         try {
             $mailbox = $this->establishMailboxConnection();
             $mailsIds = $this->searchEmails($mailbox);
-            $this->fetchEmailMessages($mailbox, $mailsIds);
+            $this->fetchEmailMessages($mailbox, $mailsIds, $this->limit);
         } catch (ConnectionException $ex) {
             $this->handleConnectionException($ex);
         } finally {
@@ -92,7 +93,7 @@ class MailboxConnectionComponent extends Component
         return $mailsIds;
     }
 
-    private function fetchEmailMessages($mailbox, $mailsIds)
+    private function fetchEmailMessages($mailbox, $mailsIds, $limit = 15)
     {
 
         if (!$mailsIds) {
@@ -105,7 +106,7 @@ class MailboxConnectionComponent extends Component
         rsort($mailsIds);
 
         // Get the last 15 emails only (@todo make this dynamic)
-        array_splice($mailsIds, 15);
+        array_splice($mailsIds, $limit);
 
         // Loop through emails one by one
 
@@ -116,6 +117,7 @@ class MailboxConnectionComponent extends Component
             //dd($head);
             $markAsSeen = false;
             $mail = $mailbox->getMail($num, $markAsSeen);
+            //dd($mail->textPlain);
             $message = [
                 'messageId' => $head->messageId,
                 'isSeen' => $head->isSeen,
@@ -129,7 +131,7 @@ class MailboxConnectionComponent extends Component
                 'sender' => isset($head->fromName) ? $head->fromName : '',
                 'replyToAddresses' => array_keys($head->replyTo),
                 'date' => $head->date,
-                'content' => $mail->textHtml ? $mail->textHtml : $mail->textPlain
+                'content' => $mail->textPlain
                 // Add more fields as needed
             ];
             //dd($message);

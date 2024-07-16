@@ -9,6 +9,9 @@
         @if ($connectionError)
         <div class="text-sm text-red-500">{{$connectionError}}</div>
         @endif
+
+        @error('ollamaServerAddress') <span class="error">{{ $message }}</span> @enderror
+
     </div>
 
     <div class="mb-3">
@@ -27,9 +30,10 @@
     </div>
 
     <div class="mb-3">
-        <label for="system" class="text-gray-600 mt-4 block">Assistant Configuration</label>
+        <label for="assistantSystem" class="text-gray-600 mt-4 block">Assistant Configuration</label>
         <textarea class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-            wire:model.live="assistantSystem" name="system" id="system" cols="30" rows="10">{{ $assistantSystem }}</textarea>
-        {{-- Email connection form --}}
+            wire:model.live="assistantSystem" name="assistantSystem" id="assistantSystem" cols="30" rows="10">{{ $assistantSystem }}</textarea>
+        @error('assistantSystem') <span class="error">{{ $message }}</span> @enderror
+
     </div>
 </div>
