@@ -7,6 +7,8 @@ use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Setting;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class MailboxConnectionComponent extends Component
@@ -15,12 +17,12 @@ class MailboxConnectionComponent extends Component
 
     // mailbox connector settings
     public $host;
-    public $port = '993';
-    public $encryption = 'ssl';
+    public $port;
+    public $encryption;
     public $username;
     public $password;
-    public $filter = 'day'; // Default filter
-    public $limit = 15;
+    public $filter; // Default filter
+    public $limit;
     public $fetching = false;
 
 
@@ -42,12 +44,16 @@ class MailboxConnectionComponent extends Component
     public function mount()
     {
         // mailbox
-        $this->username = config('responder.imap.username');
-        $this->password = config('responder.imap.password');
-        $this->host = config('responder.imap.server');
-
+        $this->username = Setting::where('key', 'username')->first()?->value ?? config('responder.imap.username');
+        $this->password = Setting::where('key', 'password')->first()?->value ?? config('responder.imap.password');
+        $this->host = Setting::where('key', 'host')->first()?->value ?? config('responder.imap.server');
+        $this->port = Setting::where('key', 'port')->first()?->value ?? '993';
+        $this->encryption = Setting::where('key', 'encryption')->first()?->value ?? 'ssl';
+        $this->filter = Setting::where('key', 'filter')->first()?->value ?? 'day';
+        $this->limit = Setting::where('key', 'limit')->first()?->value ?? 15;
     }
 
+    #[On('sync-mailbox')]
     public function connectMailbox()
     {
         $this->validate(); // Ensure this is uncommented to validate inputs
@@ -149,9 +155,13 @@ class MailboxConnectionComponent extends Component
     }
 
 
-    public function updated($property)
+    public function updated($name, $value)
     {
-        if ($property === 'filter') {
+
+        Setting::updateOrCreate(['key' => $name], ['value' => $value]);
+
+
+        if ($name === 'filter') {
             $this->fetching = true;
             $this->connectMailbox();
         }

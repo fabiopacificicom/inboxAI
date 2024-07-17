@@ -22,7 +22,8 @@
             @forelse ($models['models'] as $model)
                 <option value="{{ $model['model'] }}"
                     {{ $model['model'] === $selectedModel ? 'selected' : '' }}>
-                    {{ $model['name'] }}</option>
+                    {{ $model['name'] }}
+                </option>
             @empty
                 <option value="" disabled>no models available</option>
             @endforelse

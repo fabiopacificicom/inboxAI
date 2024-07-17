@@ -41,6 +41,7 @@ class OllamaSettings extends Component
     public function updated($name, $value)
     {
 
+        //dd($name);
         Setting::updateOrCreate(['key' => $name], ['value' => $value]);
 
 
@@ -51,6 +52,7 @@ class OllamaSettings extends Component
             // save in the settings table
         }
 
+        //dd(Setting::all());
 
     }
 
