@@ -5,6 +5,7 @@ namespace App\Livewire\AiReply;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
+use Livewire\Attributes\Modelable;
 
 use Livewire\Component;
 
@@ -12,18 +13,24 @@ class OllamaSettings extends Component
 {
 
     public $models;
+    #[Modelable]
     public $selectedModel;
     public $assistantSystem;
     public $ollamaServerAddress;
     public $connectionError = false;
 
-    public function mount()
+    public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem)
     {
-        $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
+        $this->ollamaServerAddress = $ollamaServerAddress;
+        $this->models = $models;
+        $this->selectedModel = $selectedModel;
+        $this->assistantSystem = $assistantSystem;
+
+        /* $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
         $this->models = $this->getModels();
         $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
         $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
-
+ */
         //dd($this->ollamaServerAddress);
     }
 

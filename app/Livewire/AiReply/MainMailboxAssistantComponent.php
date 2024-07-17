@@ -6,7 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Setting;
 class MainMailboxAssistantComponent extends Component
 {
 
@@ -29,13 +29,14 @@ class MainMailboxAssistantComponent extends Component
     {
         // mailbox
         $this->username = config('responder.imap.username');
+        $this->password = config('responder.imap.password');
 
         // ollama server settings
-        $this->selectedModel = config('responder.assistant.model');
-        $this->assistantSystem = config('responder.assistant.system');
+        $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
         $this->models = $this->getModels();
-        $this->ollamaServerAddress = config('responder.assistant.server');
-        $this->password = config('responder.imap.password');
+        $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
+        $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
+
 
     }
 

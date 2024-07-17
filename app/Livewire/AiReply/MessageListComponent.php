@@ -67,7 +67,7 @@ class MessageListComponent extends Component
             ]
         ];
 
-        //dd($payload);
+        //dd($payload, $this->ollamaServerAddress, $this->assistantSystem);
         $response = Http::post($this->ollamaServerAddress, $payload);
 
 
