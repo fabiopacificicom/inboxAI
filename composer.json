@@ -9,6 +9,7 @@
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
+        "nativephp/electron": "^0.6.4",
         "php-imap/php-imap": "^5.0"
     },
     "require-dev": {
