@@ -2,12 +2,12 @@
 
 namespace App\Livewire\AiReply;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 
 class MessageListComponent extends Component
 {
@@ -16,22 +16,17 @@ class MessageListComponent extends Component
     public $message;
     public $messages;
     public $fetching = false;
-    public $selectedModel;
-    public $assistantSystem;
-    public $ollamaServerAddress;
-    public function mount($selectedModel, $assistantSystem, $ollamaServerAddress)
+
+
+    public function mount()
     {
-
-        $this->selectedModel = $selectedModel;
-        $this->assistantSystem = $assistantSystem;
-        $this->ollamaServerAddress = $ollamaServerAddress;
-
         $this->messages = Cache::get('messages', []);
     }
     public function render()
     {
         return view('livewire.ai-reply.message-list-component');
     }
+
 
     #[On('mailbox-sync-event')]
     public function updateMessages($data)
@@ -75,7 +70,7 @@ class MessageListComponent extends Component
     private function getResponse($payload): array
     {
         Log::info("This is the payload:", $payload);
-        $response = Http::timeout(5000)->post($this->ollamaServerAddress, $payload);
+        $response = Http::timeout(5000)->post(Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server'), $payload);
 
         $response->onError(function ($message) {
             Log::error('❌ Error: ' . $message);
@@ -95,13 +90,13 @@ class MessageListComponent extends Component
     private function getPayload(): array
     {
         return [
-            'model' => $this->selectedModel,
+            'model' => Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model'),
             'stream' => false,
             'messages' => [
 
                 [
                     'role' => 'system',
-                    'content' => $this->assistantSystem
+                    'content' => Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system')
                 ],
                 [
                     'role' => 'user',
@@ -110,7 +105,6 @@ class MessageListComponent extends Component
             ]
         ];
     }
-
     /**
      * Sets the message for the given message id
      * This method searches the given message id and sets it

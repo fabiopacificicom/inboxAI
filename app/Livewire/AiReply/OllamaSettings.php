@@ -28,8 +28,7 @@ class OllamaSettings extends Component
 
         /* $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
         $this->models = $this->getModels();
-        $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
-        $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
+
  */
         //dd($this->ollamaServerAddress);
     }
@@ -59,6 +58,8 @@ class OllamaSettings extends Component
             // save in the settings table
         }
 
+
+        //$this->dispatch($name, $value);
         //dd(Setting::all());
 
     }
