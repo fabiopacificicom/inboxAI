@@ -30,13 +30,7 @@
         <hr class="my-3">
 
 
-        @livewire('ai-reply.mailbox-connection-component', [
-            'host' => $host,
-            'port' => $port,
-            'encryption' => $encryption,
-            'username' => $username,
-            'password' => $password,
-        ])
+        @livewire('ai-reply.mailbox-connection-component')
 
 
 
@@ -44,7 +38,6 @@
 
 
     @livewire('ai-reply.message-list-component', [
-        'messages' => $messages,
         'selectedModel' => $selectedModel,
         'assistantSystem' => $assistantSystem,
         'ollamaServerAddress' => $ollamaServerAddress,

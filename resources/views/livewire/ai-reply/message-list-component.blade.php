@@ -106,6 +106,7 @@
                                                     'ai-reply.reply-form-component',
                                                     [
                                                         'reply' => $reply[$message['messageId']],
+                                                        'message' => $message
                                                     ],
                                                     key($message['messageId'])
                                                 )

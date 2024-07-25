@@ -13,7 +13,7 @@ return [
      * usually in the form of a reverse domain name.
      * For example: com.nativephp.app
      */
-    'app_id' => env('NATIVEPHP_APP_ID', 'com.nativephp.app'),
+    'app_id' => env('NATIVEPHP_APP_ID', 'com.inboxai.app'),
 
     /**
      * If your application allows deep linking, you can specify the scheme
@@ -29,7 +29,7 @@ return [
     /**
      * The author of your application.
      */
-    'author' => env('NATIVEPHP_APP_AUTHOR'),
+    'author' => env('NATIVEPHP_APP_AUTHOR', 'Fabio Pacifici'),
 
     /**
      * The default service provider for your application. This provider
@@ -52,6 +52,9 @@ return [
         'NATIVEPHP_APPLE_ID',
         'NATIVEPHP_APPLE_ID_PASS',
         'NATIVEPHP_APPLE_TEAM_ID',
+        'INBOX_AI_*',
+        'MAIL_FROM_ADDRESS',
+
     ],
 
     /**
@@ -80,7 +83,7 @@ return [
          * The updater provider to use.
          * Supported: "github", "s3", "spaces"
          */
-        'default' => env('NATIVEPHP_UPDATER_PROVIDER', 'spaces'),
+        'default' => env('NATIVEPHP_UPDATER_PROVIDER', 'github'),
 
         'providers' => [
             'github' => [

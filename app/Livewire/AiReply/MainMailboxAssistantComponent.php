@@ -10,12 +10,6 @@ use App\Models\Setting;
 class MainMailboxAssistantComponent extends Component
 {
 
-    public $host = 'mail.fabiopacifici.com';
-    public $port = '993';
-    public $encryption = 'ssl';
-    public $username;
-    public $password;
-    public $filter = 'day'; // Default filter
     // messages processing properties
     public $messages = [];
     public $fetching = false;

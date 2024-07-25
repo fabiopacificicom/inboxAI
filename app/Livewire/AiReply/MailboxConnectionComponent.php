@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -56,6 +57,7 @@ class MailboxConnectionComponent extends Component
     #[On('sync-mailbox')]
     public function connectMailbox()
     {
+        Cache::forget('messages');
         $this->validate(); // Ensure this is uncommented to validate inputs
         $this->fetching = true;
 
@@ -91,12 +93,19 @@ class MailboxConnectionComponent extends Component
     {
         // Get all emails (messages)
         // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
-        $date = Carbon::now()->subDays($this->getDays())->format('Ymd');
-        //dd($date);
-        $criteria = 'SINCE "' . $date . '"';
-        //dd($criteria);
-        $mailsIds = $mailbox->searchMailbox($criteria);
-        return $mailsIds;
+
+        return Cache::remember(
+            'mailIds',
+            now()->addHour(),
+            function () use ($mailbox) {
+                $date = Carbon::now()->subDays($this->getDays())->format('Ymd');
+                //dd($date);
+                $criteria = 'SINCE "' . $date . '"';
+                //dd($criteria);
+                $mailsIds = $mailbox->searchMailbox($criteria);
+                return $mailsIds;
+            }
+        );
     }
 
     private function fetchEmailMessages($mailbox, $mailsIds, $limit = 15)
@@ -116,33 +125,41 @@ class MailboxConnectionComponent extends Component
 
         // Loop through emails one by one
 
-        $messages = array_map(function ($num) use ($mailbox) {
 
-            //dd($mailbox);
-            $head = $mailbox->getMailHeader($num);
-            //dd($head);
-            $markAsSeen = false;
-            $mail = $mailbox->getMail($num, $markAsSeen);
-            //dd($mail->textPlain);
-            $message = [
-                'messageId' => $head->messageId,
-                'isSeen' => $head->isSeen,
-                'isAnswered' => $head->isAnswered,
-                'isRecent' => $head->isRecent,
-                'isFlagged' => $head->isFlagged,
-                'isDeleted' => $head->isDeleted,
-                'isDraft' => $head->isDraft,
-                'subject' => $head->subject,
-                'from' => $head->fromAddress,
-                'sender' => isset($head->fromName) ? $head->fromName : '',
-                'replyToAddresses' => array_keys($head->replyTo),
-                'date' => $head->date,
-                'content' => $mail->textPlain
-                // Add more fields as needed
-            ];
-            //dd($message);
-            return $message;
-        }, $mailsIds);
+        $messages = Cache::remember('messages', now()->addHour(), function () use ($mailsIds, $mailbox) {
+            return array_map(function ($num) use ($mailbox) {
+
+                //dd($mailbox);
+                $head = $mailbox->getMailHeader($num);
+                //dd($head);
+                $markAsSeen = false;
+                $mail = $mailbox->getMail($num, $markAsSeen);
+                //dd($mail->textPlain);
+                $message = [
+                    'messageId' => $head->messageId,
+                    'isSeen' => $head->isSeen,
+                    'isAnswered' => $head->isAnswered,
+                    'isRecent' => $head->isRecent,
+                    'isFlagged' => $head->isFlagged,
+                    'isDeleted' => $head->isDeleted,
+                    'isDraft' => $head->isDraft,
+                    'subject' => $head->subject,
+                    'from' => $head->fromAddress,
+                    'sender' => isset($head->fromName) ? $head->fromName : '',
+                    'replyToAddresses' => array_keys($head->replyTo),
+                    'date' => $head->date,
+                    'content' => $mail->textPlain
+                    // Add more fields as needed
+                ];
+                //dd($message);
+                return $message;
+            }, $mailsIds);
+        });
+
+
+
+        //dd($messages);
+
 
         $this->dispatch('mailbox-sync-event', $messages)->to(MessageListComponent::class);
     }

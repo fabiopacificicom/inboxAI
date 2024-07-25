@@ -2,10 +2,13 @@
 
 namespace App\Livewire\AiReply;
 
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
+
 class MessageListComponent extends Component
 {
 
@@ -16,13 +19,14 @@ class MessageListComponent extends Component
     public $selectedModel;
     public $assistantSystem;
     public $ollamaServerAddress;
-    public function mount($messages, $selectedModel, $assistantSystem, $ollamaServerAddress)
+    public function mount($selectedModel, $assistantSystem, $ollamaServerAddress)
     {
+
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
         $this->ollamaServerAddress = $ollamaServerAddress;
 
-        $this->messages = $messages;
+        $this->messages = Cache::get('messages', []);
     }
     public function render()
     {
@@ -48,10 +52,49 @@ class MessageListComponent extends Component
     {
         //dd($messageId);
         $this->setMessage($messageId);
-
         //dd($this->message);
+
         // prepare the payload
-        $payload = [
+        $payload = $this->getPayload();
+
+        //dd($payload);
+        //dd($payload, $this->ollamaServerAddress, $this->assistantSystem);
+        // the reply message array
+        $this->reply[$messageId] = $this->getResponse($payload); // Get the response
+        //dd($this->reply)
+
+        session()->flash('reply-generated', 'Reply Generated successfully');
+
+
+    }
+
+    /**
+     * Get the ollama response for the given payload
+     * @returns array the http response as an array
+     */
+    private function getResponse($payload): array
+    {
+        Log::info("This is the payload:", $payload);
+        $response = Http::timeout(5000)->post($this->ollamaServerAddress, $payload);
+
+        $response->onError(function ($message) {
+            Log::error('❌ Error: ' . $message);
+            exit(1);
+        });
+
+        //dd($response->json());
+        Log::info('This is the ollama response', ['response' => $response->json()]);
+        return $response->json();
+    }
+
+    /**
+     * get the payload for the ollama api request
+     *
+     * @returns array
+     */
+    private function getPayload(): array
+    {
+        return [
             'model' => $this->selectedModel,
             'stream' => false,
             'messages' => [
@@ -66,31 +109,18 @@ class MessageListComponent extends Component
                 ]
             ]
         ];
-
-        //dd($payload, $this->ollamaServerAddress, $this->assistantSystem);
-        $response = Http::post($this->ollamaServerAddress, $payload);
-
-
-        $response->onError(function ($message) {
-            Log::error('❌ Error: ' . $message);
-            exit(1);
-        });
-
-        //dd($response->json());
-        Log::info('This is the ollama response', ['response' => $response->json()]);
-        // the reply message array
-        $this->reply[$messageId] = $response->json(); // Get the response
-
-
     }
 
-
-    public function setMessage($id)
+    /**
+     * Sets the message for the given message id
+     * This method searches the given message id and sets it
+     */
+    public function setMessage($id): void
     {
         Log::info('looking for the message by its id' . $id);
         foreach ($this->messages as $message) {
-            if (in_array($id, $message)) {
-
+            //dd($message);
+            if ($id === $message['messageId']) {
                 $this->message = $message;
                 break;
             }
