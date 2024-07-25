@@ -77,6 +77,26 @@ class MailboxConnectionComponent extends Component
 
     private function establishMailboxConnection()
     {
+
+
+        /* @todo
+         These constants seems to be missing when the app is packaged using native script
+        to build a desktop app.
+        If activated the webapp stops working with a constant already declared error.
+       define('OP_READONLY', 0);
+        define('OP_ANONYMOUS', 0);
+        define('OP_HALFOPEN', 0);
+        define('CL_EXPUNGE', 0);
+        define('OP_DEBUG', 0);
+        define('OP_SHORTCACHE', 0);
+        define('OP_SILENT', 0);
+        define('OP_PROTOTYPE', 0);
+        define('OP_SECURE', 0);
+        define('SE_UID', 0); */
+
+
+
+
         return new Mailbox(
             '{' . $this->host . ':' . $this->port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
             $this->username, // Username for the before configured mailbox
