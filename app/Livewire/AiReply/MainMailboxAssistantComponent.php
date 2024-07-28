@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
+
 class MainMailboxAssistantComponent extends Component
 {
 
@@ -17,21 +18,18 @@ class MainMailboxAssistantComponent extends Component
     public $models;
     public $selectedModel;
     public $assistantSystem;
+    public $classifierSystem;
+
     public $ollamaServerAddress;
 
     public function mount()
     {
-        // mailbox
-        $this->username = config('responder.imap.username');
-        $this->password = config('responder.imap.password');
-
         // ollama server settings
         $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
         $this->models = $this->getModels();
         $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
         $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
-
-
+        $this->classifierSystem = Setting::where('key', 'classifierSystem')->first()?->value ?? config('responder.classifier.system');
     }
 
     public function render()
@@ -39,10 +37,10 @@ class MainMailboxAssistantComponent extends Component
         return view('livewire.ai-reply.main-mailbox-assistant-component');
     }
 
-    public function getModels(){
+    public function getModels()
+    {
         $response = Http::get(config('responder.assistant.tags'));
         return $response->json();
-
     }
 
 

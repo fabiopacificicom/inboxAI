@@ -20,6 +20,7 @@
             @livewire('ai-reply.ollama-settings', [
                 'selectedModel' => $selectedModel,
                 'assistantSystem' => $assistantSystem,
+                'classifierSystem' => $classifierSystem,
                 'models' => $models,
                 'ollamaServerAddress' => $ollamaServerAddress,
             ])

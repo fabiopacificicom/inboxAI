@@ -68,16 +68,16 @@
                                             <div class="flex justify-between items-center">
                                                 <button
                                                     class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                                                    wire:click="generateReplyFor('{{ $message['messageId'] }}')"
+                                                    wire:click="processMessage('{{ $message['messageId'] }}')"
                                                     wire:loading.attr="disabled"
-                                                    wire:target="generateReplyFor('{{ $message['messageId'] }}')"
+                                                    wire:target="processMessage('{{ $message['messageId'] }}')"
                                                     wire:loading.class="opacity-50 cursor-not-allowed">
                                                     <span wire:loading.remove
-                                                        wire:target="generateReplyFor('{{ $message['messageId'] }}')">
-                                                        Generate Reply
+                                                        wire:target="processMessage('{{ $message['messageId'] }}')">
+                                                        Process Message
                                                     </span>
                                                     <span wire:loading
-                                                        wire:target="generateReplyFor('{{ $message['messageId'] }}')"
+                                                        wire:target="processMessage('{{ $message['messageId'] }}')"
                                                         class="absolute left-0 right-0 mx-auto">
                                                         <svg class="animate-spin h-5 w-5 mr-3"
                                                             xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -90,7 +90,7 @@
                                                         </svg>
                                                     </span>
                                                     <span wire:loading
-                                                        wire:target="generateReplyFor('{{ $message['messageId'] }}')">
+                                                        wire:target="processMessage('{{ $message['messageId'] }}')">
                                                         In progress
                                                     </span>
                                                 </button>
