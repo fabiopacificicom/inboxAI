@@ -19,6 +19,7 @@ class MainMailboxAssistantComponent extends Component
     public $selectedModel;
     public $assistantSystem;
     public $classifierSystem;
+    public $selectedClassifier;
 
     public $ollamaServerAddress;
 
@@ -30,6 +31,8 @@ class MainMailboxAssistantComponent extends Component
         $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
         $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
         $this->classifierSystem = Setting::where('key', 'classifierSystem')->first()?->value ?? config('responder.classifier.system');
+        $this->selectedClassifier = Setting::where('key', 'selectedClassifier')->first()?->value ?? config('responder.classifier.model');
+
     }
 
     public function render()

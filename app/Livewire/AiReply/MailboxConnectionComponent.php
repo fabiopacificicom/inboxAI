@@ -148,27 +148,28 @@ class MailboxConnectionComponent extends Component
 
         $messages = Cache::remember('messages', now()->addHour(), function () use ($mailsIds, $mailbox) {
             return array_map(function ($num) use ($mailbox) {
-
                 //dd($mailbox);
-                $head = $mailbox->getMailHeader($num);
+                // this fetches only the header
+                //$head = $mailbox->getMailHeader($num);
                 //dd($head);
-                $markAsSeen = false;
+                $markAsSeen = true;
                 $mail = $mailbox->getMail($num, $markAsSeen);
-                //dd($mail->textPlain);
+                //dd($num, $head, $mail);
+
                 $message = [
-                    'messageId' => $head->messageId,
-                    'isSeen' => $head->isSeen,
-                    'isAnswered' => $head->isAnswered,
-                    'isRecent' => $head->isRecent,
-                    'isFlagged' => $head->isFlagged,
-                    'isDeleted' => $head->isDeleted,
-                    'isDraft' => $head->isDraft,
-                    'subject' => $head->subject,
-                    'from' => $head->fromAddress,
-                    'sender' => isset($head->fromName) ? $head->fromName : '',
-                    'replyToAddresses' => array_keys($head->replyTo),
-                    'date' => $head->date,
-                    'content' => $mail->textPlain
+                    'messageId' => $mail->messageId,
+                    'isSeen' => $mail->isSeen,
+                    'isAnswered' => $mail->isAnswered,
+                    'isRecent' => $mail->isRecent,
+                    'isFlagged' => $mail->isFlagged,
+                    'isDeleted' => $mail->isDeleted,
+                    'isDraft' => $mail->isDraft,
+                    'subject' => $mail->subject,
+                    'from' => $mail->fromAddress,
+                    'sender' => isset($mail->fromName) ? $mail->fromName : '',
+                    'replyToAddresses' => array_keys($mail->replyTo),
+                    'date' => $mail->date,
+                    'content' => str_replace(["\t","\r", "\n"], "", $mail->textPlain)
                     // Add more fields as needed
                 ];
                 //dd($message);

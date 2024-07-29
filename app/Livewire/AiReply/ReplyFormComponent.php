@@ -3,6 +3,7 @@
 namespace App\Livewire\AiReply;
 
 use App\Mail\InboxAiReplyMailable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
@@ -28,9 +29,10 @@ class ReplyFormComponent extends Component
     {
         $this->reply = $reply;
         //dd($reply);
-        //$responseContent = json_decode($reply['message']['content'], true);
-        //dd($responseContent);
-        //$this->content = $responseContent['reply'];
+        $messageContent = json_decode($reply['message']['content'],true);
+        if(array_key_exists('reply', $messageContent)){
+            $this->content = $messageContent['reply'];
+        }
         $this->message = $message;
     }
 
@@ -61,18 +63,6 @@ class ReplyFormComponent extends Component
     }
 
 
-
-    public function classify($id, $category)
-    {
-        dd('classify', $id, $category);
-    }
-
-    public function calendar($event)
-    {
-        dd('calendar insert event', $event);
-    }
-
-
     public function sendReply()
     {
         //dd($this->reply);
@@ -80,7 +70,7 @@ class ReplyFormComponent extends Component
 
         //dd($this->content, $this->message, $this->reply);
         // sent the reply email
-        Mail::to('admin@example.com')->send(new InboxAiReplyMailable($this->content, $this->message));
+        Mail::send(new InboxAiReplyMailable($this->content, $this->message));
         // Dispatch an event to notify other components that a reply has been sent
         session()->flash('reply-sent', 'Message sent successfully');
 

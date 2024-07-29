@@ -8,6 +8,7 @@ return [
     ],
 
     'classifier' => [
+        'model'=> 'inboxAI:c1',
         'system' => '
         You are inboxAI. You are a personal AI assitant specialized in email messages classification.
             Classify the given resource message using one of the following categories:

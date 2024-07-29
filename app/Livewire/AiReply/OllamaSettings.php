@@ -15,18 +15,23 @@ class OllamaSettings extends Component
     public $models;
     #[Modelable]
     public $selectedModel;
+    #[Modelable]
+    public $selectedClassifier;
+
     public $assistantSystem;
     public $classifierSystem;
     public $ollamaServerAddress;
     public $connectionError = false;
 
-    public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem, $classifierSystem)
+    public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem, $classifierSystem, $selectedClassifier)
     {
         $this->ollamaServerAddress = $ollamaServerAddress;
         $this->models = $models;
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
         $this->classifierSystem = $classifierSystem;
+        $this->selectedClassifier = $selectedClassifier;
+
 
 
         /* $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
