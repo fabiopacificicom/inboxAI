@@ -39,6 +39,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                {{-- @dd($messages) --}}
                     @forelse ($messages as $message)
                         <tr>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -106,7 +107,7 @@
                                                     'ai-reply.reply-form-component',
                                                     [
                                                         'reply' => $reply[$message['messageId']],
-                                                        'message' => $message
+                                                        'message' => $message,
                                                     ],
                                                     key($message['messageId'])
                                                 )
@@ -142,8 +143,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
-                                <button
-                                    class="bg-gray-900 text-white p-2 hover:bg-gray-700 rounded hover:shadow"
+                                <button class="bg-gray-900 text-white p-2 hover:bg-gray-700 rounded hover:shadow"
                                     wire:click="$dispatch('sync-mailbox')" wire:loading.attr="disabled">
                                     <div class="mx-auto flex gap-2 items-center" wire:loading.remove>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"

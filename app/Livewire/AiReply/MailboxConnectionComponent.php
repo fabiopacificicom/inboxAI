@@ -168,7 +168,7 @@ class MailboxConnectionComponent extends Component
                     'from' => $mail->fromAddress,
                     'sender' => isset($mail->fromName) ? $mail->fromName : '',
                     'replyToAddresses' => array_keys($mail->replyTo),
-                    'date' => $mail->date,
+                    'date' => $this->normalizeDate($mail->date),
                     'content' => str_replace(["\t","\r", "\n"], "", $mail->textPlain)
                     // Add more fields as needed
                 ];
@@ -213,4 +213,37 @@ class MailboxConnectionComponent extends Component
             default => 1,
         };
     }
+
+    private function normalizeDate($dateString) {
+        // Define an array of known formats
+        $knownFormats = [
+            'D, d M Y H:i:s O', // Example: Tue, 6 Aug 2024 19:51:35 +0800
+            'Y-m-d\TH:i:sP',    // Example: 2024-08-06T13:29:12+00:00
+            // Add more formats as needed
+        ];
+
+        // Attempt to parse the date using known formats
+        foreach ($knownFormats as $format) {
+            try {
+                $date = Carbon::createFromFormat($format, $dateString);
+                if ($date !== false) {
+                    return $date;
+                }
+            } catch (\Exception $e) {
+                // Log the exception message if needed
+                Log::error($e->getMessage(), ['date'=> $dateString]);
+            }
+        }
+
+        // As a last resort, try letting Carbon parse the date automatically
+        try {
+            return Carbon::parse($dateString);
+        } catch (\Exception $e) {
+            // Handle the exception if the date cannot be parsed
+            // This could log an error, return null, or use a default date
+            Log::error($e->getMessage(), ['date'=> $dateString]);
+            return null;
+        }
+    }
+
 }

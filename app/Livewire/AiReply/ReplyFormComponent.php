@@ -29,8 +29,8 @@ class ReplyFormComponent extends Component
     {
         $this->reply = $reply;
         //dd($reply);
-        $messageContent = json_decode($reply['message']['content'],true);
-        if(array_key_exists('reply', $messageContent)){
+        $messageContent = json_decode($reply['message']['content'], true);
+        if (array_key_exists('reply', $messageContent)) {
             $this->content = $messageContent['reply'];
         }
         $this->message = $message;
@@ -38,7 +38,8 @@ class ReplyFormComponent extends Component
 
 
 
-    public function updatedContent($value){
+    public function updatedContent($value)
+    {
         $this->content = $value;
     }
 

@@ -3,12 +3,12 @@
 namespace App\Livewire\AiReply;
 
 use App\Models\Setting;
+use Google_Service;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use PDO;
 
 class MessageListComponent extends Component
 {
@@ -150,11 +150,11 @@ class MessageListComponent extends Component
 
         Log::info('Action Request, instructions: ' . $instructions);
 
-        if($instructions == 'summarize' || $instructions == 'generateReply') {
+        if ($instructions == 'summarize' || $instructions == 'generateReply') {
             $this->generateReply($messageId);
         }
 
-        if($instructions == 'event') {
+        if ($instructions == 'event') {
             $this->updateCalendar($messageId);
         }
     }
@@ -225,10 +225,18 @@ class MessageListComponent extends Component
     public function updateCalendar($reply)
     {
         $replyContent = json_decode($reply['message']['content'], true);
-        if($replyContent['event']){
+        if ($replyContent['event']) {
             dd($replyContent['event']);
-        }
 
+            // google docs example request to insert an event in the calendar
+
+            // Refer to the PHP quickstart on how to setup the environment:
+            // https://developers.google.com/calendar/quickstart/php
+            // Change the scope to Google_Service_Calendar::CALENDAR and delete any stored
+            // credentials.
+
+
+        }
     }
 
     public function moveMessage($message, $category)
@@ -237,8 +245,4 @@ class MessageListComponent extends Component
         // TODO:
         Log::info('Move the message', ['message' => $message, 'category' => $category]);
     }
-
-
-
-
 }
