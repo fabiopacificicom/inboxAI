@@ -7,6 +7,7 @@
     @endif
 
 
+
     <div id="settings" x-data="{ open: false }">
         <div class="flex justify-between items-center mb-4">
 
@@ -124,6 +125,9 @@
 
     </div>
     {{-- /#settings --}}
+
+
+
 
     <div id="reply-area" class="p-4 bg-white shadow-md rounded-lg">
         {{-- Reply form --}}

@@ -1,11 +1,9 @@
 <div>
 
 
-    <div x-data="{ open: false }" class="mb-4" x-bind:class="{ 'flex items-end justify-between': !open }">
+    <div class="mb-4 flex items-end justify-between">
 
-
-        <button @click="open = !open"
-            class="flex items-center gap-2 bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+        <button class="flex items-center gap-2 bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" popovertarget="settings" popoveraction="show">
             {{ __('Settings') }}
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-sliders2-vertical" viewBox="0 0 16 16">
@@ -14,9 +12,7 @@
             </svg>
         </button>
 
-
-        <div id="ollama-settings" x-show="open" style="display: none;">
-
+        <dialog id="settings" popover>
             @livewire('ai-reply.ollama-settings', [
                 'selectedModel' => $selectedModel,
                 'selectedClassifier' => $selectedClassifier,
@@ -25,11 +21,8 @@
                 'models' => $models,
                 'ollamaServerAddress' => $ollamaServerAddress,
             ])
+        </dialog>
 
-
-        </div>
-
-        <hr class="my-3">
 
 
         @livewire('ai-reply.mailbox-connection-component')

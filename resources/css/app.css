@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 
+
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -23,4 +24,41 @@
     background-color: white;
     border: 1px solid gray;
     border-radius: 1rem;
+}
+
+
+dialog#settings {
+    @apply bg-white shadow-lg rounded-md;
+    width: 90%;
+    max-width: 1176px;
+    margin: auto;
+    padding: 2.5rem;
+    border: 1px solid rgb(187, 187, 187);
+    border-radius: 0.5rem;
+    overflow-y: auto;
+    max-height: 90dvh;
+    @media (max-width: 420px) {
+        max-height: 100dvh;
+    }
+
+    &::backdrop {
+        backdrop-filter: blur(0.1rem);
+    }
+
+    /* Change the default scrollbar size and color to a tiny one light gray */
+    &::-webkit-scrollbar, & textarea::-webkit-scrollbar {
+        width: 5px;
+    }
+    &::-webkit-scrollbar-track, & textarea::-webkit-scrollbar-track {
+        background-color: #cecece;
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb, & textarea::-webkit-scrollbar-thumb {
+        background-color: #444444;
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb:hover, & textarea::-webkit-scrollbar-thumb:hover {
+        background-color: #333333;
+    }
+
 }
