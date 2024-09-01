@@ -26,6 +26,9 @@
     border-radius: 1rem;
 }
 
+::backdrop {
+    backdrop-filter: blur(0.1rem);
+}
 
 dialog#settings {
     @apply bg-white shadow-lg rounded-md;
@@ -41,9 +44,7 @@ dialog#settings {
         max-height: 100dvh;
     }
 
-    &::backdrop {
-        backdrop-filter: blur(0.1rem);
-    }
+
 
     /* Change the default scrollbar size and color to a tiny one light gray */
     &::-webkit-scrollbar, & textarea::-webkit-scrollbar {

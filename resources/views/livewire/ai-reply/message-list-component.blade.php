@@ -1,11 +1,11 @@
-<div id="inbox-table" class="min-h-screen bg-gray-100 p-5">
+<div id="inbox-table" class="min-h-screen">
     {{-- Messages table --}}
     @if ($fetching)
         <div class="flex justify-center items-center h-full">
             <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-12 w-12"></div>
         </div>
     @else
-        <div class="messages bg-white shadow overflow-hidden rounded-lg">
+        <div class="messages">
             @if (session()->has('message'))
                 <div class="alert bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
                     role="alert">
@@ -22,12 +22,9 @@
                         </th>
                         <th
                             class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Sender
+                            Sender Details
                         </th>
-                        <th
-                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Reply To
-                        </th>
+
                         <th
                             class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Subject
@@ -39,22 +36,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                {{-- @dd($messages) --}}
+                    {{-- @dd($messages) --}}
                     @forelse ($messages as $message)
                         <tr>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
                             </td>
+                            {{-- /date --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ $message['sender'] }}
-                                {{ $message['from'] }}
+                                <strong><em>Sender:</em></strong> {{ $message['sender'] }}<br>
+                                <strong><em>From:</em></strong> {{ $message['from'] }} <br>
+                                <strong><em>Reply to:</em></strong> {{ Arr::join($message['replyToAddresses'], ',') }}
                             </td>
-                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ Arr::join($message['replyToAddresses'], ',') }}
-                            </td>
+                            {{-- /sender details --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ $message['subject'] }}
                             </td>
+                            {{-- /subject  --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 <div x-data="{ show: false }">
                                     <button
