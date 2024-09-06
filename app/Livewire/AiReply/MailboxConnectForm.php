@@ -102,11 +102,14 @@ class MailboxConnectForm extends Component
             // Get all emails (messages)
             // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
             $date = Carbon::now()->subDays($this->getDays())->format('Ymd');
+            Log::info("Fetching emails date: $date");
             //dd($date);
             $criteria = 'SINCE "' . $date . '"';
+            Log::info("Fetching emails criteria: $criteria");
             //dd($criteria);
             $mailsIds = $mailbox->searchMailbox($criteria);
             //dd($mailsIds);
+            Log::info("Fetching emails ids: ". count($mailsIds));
         } catch (ConnectionException $ex) {
             $message = "IMAP connection failed: " . implode(",", $ex->getErrors('all'));
             Log::error($message);
@@ -143,7 +146,9 @@ class MailboxConnectForm extends Component
             //dd($mailbox);
             $head = $mailbox->getMailHeader($num);
             //dd($head);
-            $markAsSeen = false;
+            Log::info("Fetching email: $num");
+            Log::info("Fetching email header: $head");
+            $markAsSeen = true;
             $mail = $mailbox->getMail($num, $markAsSeen);
             $message = [
                 'messageId' => $head->messageId,

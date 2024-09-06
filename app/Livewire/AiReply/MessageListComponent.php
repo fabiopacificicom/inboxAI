@@ -54,9 +54,16 @@ class MessageListComponent extends Component
         // classify the message for further processing
         $response = $this->classify($message);
 
+        //dd($response);
         // destruct the response
         [$category, $action, $instructions] = $this->extractDataFrom($response);
 
+        /* TODO:
+        - At this point we should use the category to determine how to handle the message.
+         $this->moveMessage($messageId, $category);
+         */
+
+        //dd($category, $action, $instructions);
         $this->performActions($action, $instructions, $messageId);
     }
 
@@ -73,6 +80,7 @@ class MessageListComponent extends Component
     public function setMessage($id)
     {
         Log::info('Message ID: ' . $id);
+
         foreach ($this->messages as $message) {
             //dd($message);
             if ($id === $message['messageId']) {
@@ -141,7 +149,7 @@ class MessageListComponent extends Component
         return [$category, $action, $instructions];
     }
 
-    public function performActions($action, $instructions, $messageId)
+    public function performActions($action, $instructions, $messageId, $category = null)
     {
         if (!$action) {
             session()->flash('reply-generated', 'No action required.');
@@ -151,7 +159,7 @@ class MessageListComponent extends Component
         Log::info('Action Request, instructions: ' . $instructions);
 
         if ($instructions == 'summarize' || $instructions == 'generateReply') {
-            $this->generateReply($messageId);
+            $this->generateReply($messageId, $instructions, $action);
         }
 
         if ($instructions == 'event') {
@@ -222,6 +230,12 @@ class MessageListComponent extends Component
 
 
     #[On('reply-generated')]
+    /**
+     * TODO:
+     * Update the calendar
+     * @param array $reply
+     * @return void
+     */
     public function updateCalendar($reply)
     {
         $replyContent = json_decode($reply['message']['content'], true);
@@ -239,6 +253,13 @@ class MessageListComponent extends Component
         }
     }
 
+    /**
+     * TODO:
+     * Move a message to a category on the IMAP server
+     * @param $message the message to be moved
+     * @param $category the category to move it into
+     * @return void
+     */
     public function moveMessage($message, $category)
     {
         dd('TODO: Move the message in a dedicated folder on the IMAP server', $message, $category);
