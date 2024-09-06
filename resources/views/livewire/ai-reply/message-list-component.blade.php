@@ -7,7 +7,7 @@
     @else
         <div class="messages overflow-x-auto">
             @if (session()->has('message'))
-                <div class="alert bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
+                <div class="alert bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded fixed top-5 left-5"
                     role="alert">
                     {{ session('message') }}
                 </div>
@@ -37,16 +37,19 @@
                 </thead>
                 <tbody>
                     {{-- @dd($messages) --}}
-                    @forelse ($messages as $message)
+                    @forelse ($messages as $index => $message)
+                    {{-- @dd($message) --}}
                         <tr>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
                             </td>
                             {{-- /date --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+
                                 <strong><em>Sender:</em></strong> {{ $message['sender'] }}<br>
                                 <strong><em>From:</em></strong> {{ $message['from'] }} <br>
-                                <strong><em>Reply to:</em></strong> {{ Arr::join($message['replyToAddresses'], ',') }}
+                                <strong><em>Reply to:</em></strong>
+                                {{ Arr::join($message['replyToAddresses'], ',') }}
                             </td>
                             {{-- /sender details --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -54,88 +57,93 @@
                             </td>
                             {{-- /subject  --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                <div x-data="{ show: false }">
-                                    <button
-                                        class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-dark-950 focus:outline-none focus:shadow-outline"
-                                        x-on:click="show = !show">
-                                        View
-                                    </button>
 
-                                    <div class="modal-backdrop bg-gray-900 bg-opacity-50 absolute inset-0 flex justify-center items-center"
-                                        x-show="show" style="display: none;">
-                                        <div class="modal-card bg-white p-6 rounded-lg shadow-xl">
-                                            <div class="flex justify-between items-center">
-                                                <button
-                                                    class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                                                    wire:click="processMessage('{{ $message['messageId'] }}')"
-                                                    wire:loading.attr="disabled"
-                                                    wire:target="processMessage('{{ $message['messageId'] }}')"
-                                                    wire:loading.class="opacity-50 cursor-not-allowed">
-                                                    <span wire:loading.remove
-                                                        wire:target="processMessage('{{ $message['messageId'] }}')">
-                                                        Process Message
-                                                    </span>
-                                                    <span wire:loading
-                                                        wire:target="processMessage('{{ $message['messageId'] }}')"
-                                                        class="absolute left-0 right-0 mx-auto">
-                                                        <svg class="animate-spin h-5 w-5 mr-3"
-                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24">
-                                                            <circle class="opacity-25" cx="12" cy="12"
-                                                                r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path class="opacity-75" fill="currentColor"
-                                                                d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
-                                                            </path>
-                                                        </svg>
-                                                    </span>
-                                                    <span wire:loading
-                                                        wire:target="processMessage('{{ $message['messageId'] }}')">
-                                                        In progress
-                                                    </span>
-                                                </button>
-                                                <button
-                                                    class="px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline"
-                                                    x-on:click="show = !show">
-                                                    Close
-                                                </button>
+
+                                <button popovertarget="message-popover-{{ $index }}"
+                                    class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-dark-950 focus:outline-none focus:shadow-outline">Open</button>
+                                <dialog popover id="message-popover-{{ $index }}"
+                                    class="max-w-7xl m-auto bg-white p-6 rounded-lg shadow-xl">
+
+
+                                    <header class="modal-header flex justify-between items-center">
+                                        <button
+                                            class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
+                                            wire:click="processMessage('{{ $message['messageId'] }}')"
+                                            wire:loading.attr="disabled"
+                                            wire:target="processMessage('{{ $message['messageId'] }}')"
+                                            wire:loading.class="opacity-50 cursor-not-allowed">
+                                            <span wire:loading.remove
+                                                wire:target="processMessage('{{ $message['messageId'] }}')">
+                                                Process Message
+                                            </span>
+                                            <span wire:loading
+                                                wire:target="processMessage('{{ $message['messageId'] }}')"
+                                                class="absolute left-0 right-0 mx-auto">
+                                                <svg class="animate-spin h-5 w-5 mr-3"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
+                                                    </path>
+                                                </svg>
+                                            </span>
+                                            <span wire:loading
+                                                wire:target="processMessage('{{ $message['messageId'] }}')">
+                                                In progress
+                                            </span>
+                                        </button>
+                                        <button popovertarget="message-popover-{{ $index }}"
+                                            popovertargetaction="hide"
+                                            class="px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline">
+                                            Close
+                                        </button>
+                                    </header>
+                                    {{-- /.modal-header --}}
+
+                                    @if (array_key_exists($message['messageId'], $reply))
+                                        @livewire(
+                                            'ai-reply.reply-form-component',
+                                            [
+                                                'reply' => $reply[$message['messageId']],
+                                                'message' => $message,
+                                            ],
+                                            key($message['messageId'])
+                                        )
+                                    @endif
+                                    {{-- /Livewire ai-reply.reply-form-component --}}
+
+                                    <div class="metadata py-4">
+                                        <p class="text-gray-900 leading-none">
+                                            Message ID: {{ $message['messageId'] }}
+                                        </p>
+                                        <p class="text-gray-600">
+                                            Sender: {{ $message['sender'] }}
+                                        </p>
+                                    </div>
+                                    {{-- /.metadata --}}
+
+                                    <div class="received-message mt-4">
+                                        <h3 class="text-lg font-semibold">Original</h3>
+                                        <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
+                                            <!-- Blade Template -->
+                                            @php
+                                                $messageId = 'emailIframe-' . md5($message['messageId']);
+                                            @endphp
+                                            <div class="overflow-y-auto h-32" id="wrapper-{{ $messageId }}">
+                                                {{ $message['content'] }}
                                             </div>
 
-                                            @if (array_key_exists($message['messageId'], $reply))
-                                                @livewire(
-                                                    'ai-reply.reply-form-component',
-                                                    [
-                                                        'reply' => $reply[$message['messageId']],
-                                                        'message' => $message,
-                                                    ],
-                                                    key($message['messageId'])
-                                                )
-                                            @endif
-
-                                            <div class="py-4">
-                                                <p class="text-gray-900 leading-none">
-                                                    Message ID: {{ $message['messageId'] }}
-                                                </p>
-                                                <p class="text-gray-600">
-                                                    Sender: {{ $message['sender'] }}
-                                                </p>
-                                            </div>
-
-                                            <div class="original mt-4">
-                                                <h3 class="text-lg font-semibold">Original</h3>
-                                                <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
-                                                    <!-- Blade Template -->
-                                                    @php
-                                                        $messageId = 'emailIframe-' . md5($message['messageId']);
-                                                    @endphp
-                                                    <div class="overflow-y-auto h-32" id="wrapper-{{ $messageId }}">
-                                                        {{ $message['content'] }}
-                                                    </div>
-
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    {{-- /.received-message --}}
+
+                                </dialog>
+
+
+
+
                             </td>
                         </tr>
                     @empty
