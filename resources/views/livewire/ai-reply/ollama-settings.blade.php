@@ -24,8 +24,8 @@
 
         {{-- models --}}
         <div class="mb-3">
-            <label for="model" class="block text-gray-600">Assistant Model</label>
-            <select name="model" id="model" wire:model.live="selectedModel"
+            <label for="assistant-model" class="block text-gray-600">Assistant Model</label>
+            <select name="assistant-model" id="assistant-model" wire:model.live="selectedModel"
                 class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
                 @forelse ($models['models'] as $model)
@@ -39,8 +39,8 @@
         </div>
 
         <div class="mb-3">
-            <label for="model" class="block text-gray-600">Classifier model</label>
-            <select name="model" id="model" wire:model.live="selectedClassifier"
+            <label for="classifier-model" class="block text-gray-600">Classifier model</label>
+            <select name="classifier-model" id="classifier-model" wire:model.live="selectedClassifier"
                 class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
                 @forelse ($models['models'] as $model)
