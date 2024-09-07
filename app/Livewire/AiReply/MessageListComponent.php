@@ -9,10 +9,12 @@ use Livewire\Component;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Livewire\WithPagination;
 
 class MessageListComponent extends Component
 {
 
+    use WithPagination;
     public $reply = [];
     public $message;
     public $messages;
@@ -156,24 +158,20 @@ class MessageListComponent extends Component
             return;
         }
 
-        Log::info('Action Request, instructions: ' . $instructions);
+        Log::info('Action Request, instructions: ', ['instructions'=> $instructions]);
 
-        if ($instructions == 'summarize' || $instructions == 'generateReply') {
-            $this->generateReply($messageId, $instructions, $action);
-        }
+        $this->generateReply($messageId, $instructions);
 
-        if ($instructions == 'event') {
-            $this->updateCalendar($messageId);
-        }
     }
 
 
 
-    public function generateReply($messageId)
+    public function generateReply($messageId, $instructions)
     {
+        //dd($messageId, $instructions);
         //dd('reply to the message', $this->message);
         // prepare the payload to process the selected message
-        $payload = $this->getPayload();
+        $payload = $this->getPayload($instructions);
         //dd($payload);
         // Use the payload to generate a response
         $this->reply[$messageId] = $this->getResponse($payload); // Get the response
@@ -181,6 +179,10 @@ class MessageListComponent extends Component
         session()->flash('reply-generated', 'Reply Generated successfully');
         Log::info('Reply generated', $this->reply[$messageId]);
         $this->dispatch('reply-generated', $this->reply[$messageId]);
+
+        if ($instructions == 'insertEvent') {
+            $this->updateCalendar($messageId, $this->reply[$messageId]);
+        }
     }
 
 
@@ -190,8 +192,12 @@ class MessageListComponent extends Component
      *
      * @returns array
      */
-    private function getPayload(): array
+    private function getPayload($instructions = null): array
     {
+
+        if (is_array($instructions)) $instructions = join(',', $instructions);
+       // if ($instructions) $message = ['role'=> 'user', 'content'=> "Instructions: $instructions"];
+        //dd($instructions, $this->message);
         return [
             'model' => Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model'),
             'stream' => false,
@@ -204,7 +210,7 @@ class MessageListComponent extends Component
                 ],
                 [
                     'role' => 'user',
-                    'content' => json_encode($this->message)
+                    'content' => json_encode($this->message) . ' Action to take: ' . $instructions
                 ]
             ]
         ];
@@ -236,21 +242,22 @@ class MessageListComponent extends Component
      * @param array $reply
      * @return void
      */
-    public function updateCalendar($reply)
+    public function updateCalendar($messageId, $reply)
     {
+        /* TODO:
+        Handle the reply here, inside the reply thereis the google calendar event json
+        to use with the spatie package to insert calendar events. */
+        //dd($messageId, $reply);
         $replyContent = json_decode($reply['message']['content'], true);
-        if ($replyContent['event']) {
-            dd($replyContent['event']);
-
-            // google docs example request to insert an event in the calendar
-
-            // Refer to the PHP quickstart on how to setup the environment:
-            // https://developers.google.com/calendar/quickstart/php
-            // Change the scope to Google_Service_Calendar::CALENDAR and delete any stored
-            // credentials.
 
 
+        if (!$replyContent['event']) {
+            throw new \Exception("Missing event key in the provided response", 1);
         }
+
+        dd($replyContent['event'], $replyContent['reply']);
+
+        //https://packagist.org/packages/spatie/laravel-google-calendar
     }
 
     /**
