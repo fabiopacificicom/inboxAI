@@ -5,7 +5,10 @@
                 {{ __('Dashboard') }}
             </h2>
 
-            @livewire('ai-reply.mailbox-connection-component')
+            <div class="flex items-center">
+                @livewire('show-calendar')
+                @livewire('ai-reply.mailbox-connection-component')
+            </div>
         </div>
 
     </x-slot>
