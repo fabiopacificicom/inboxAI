@@ -102,7 +102,7 @@
 
                 {{-- Limit results --}}
                 <div id="limit">
-                    <label for="limig" class="block text-sm font-medium text-gray-700">Limit results to:</label>
+                    <label for="limit" class="block text-sm font-medium text-gray-700">Limit results to:</label>
                     <input type="number" name="limit" id="limit" wire:model.blur="limit"
                         class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
                 </div>
