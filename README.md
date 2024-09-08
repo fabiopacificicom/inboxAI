@@ -4,6 +4,14 @@ Use private LLM running locally to manage your inbox. It works with Ollama and o
 
 Visit and download the desired models from the ollama website.
 
+## Features:
+- [x] Connects with a custom maibox via SMTP
+- [x] Connects with the Ollama AI server
+- [x] Set AI Assistant and classifier to handles incoming messages 
+- [x] Process the incoming messages and generate a reply
+- [x] Insert a Google Calendar Event if necessary
+- [ ] Classify the incoming message (WIP)
+
 
 ## General Requirements:
 - Install Ollama in your system, see the download page [here]()
