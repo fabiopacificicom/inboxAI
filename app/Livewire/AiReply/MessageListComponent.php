@@ -10,6 +10,8 @@ use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Livewire\WithPagination;
+use Spatie\GoogleCalendar\Event;
+use Carbon\Carbon;
 
 class MessageListComponent extends Component
 {
@@ -49,24 +51,20 @@ class MessageListComponent extends Component
     public function processMessage($messageId): void
     {
 
-        // set the message for processing
+        // 1. set the message for processing
         $message = $this->setMessage($messageId);
         //dd($message);
 
-        // classify the message for further processing
+        // 2. classify the message for further processing
         $response = $this->classify($message);
-
         //dd($response);
-        // destruct the response
+
+        // 3. Extract the data from the classifier response
         [$category, $action, $instructions] = $this->extractDataFrom($response);
-
-        /* TODO:
-        - At this point we should use the category to determine how to handle the message.
-         $this->moveMessage($messageId, $category);
-         */
-
         //dd($category, $action, $instructions);
-        $this->performActions($action, $instructions, $messageId);
+
+        // 4. Perform the actions on the message based on the action
+        $this->performActions($action, $instructions, $messageId, $category);
     }
 
     /**
@@ -81,21 +79,33 @@ class MessageListComponent extends Component
      */
     public function setMessage($id)
     {
-        Log::info('Message ID: ' . $id);
+        $this->message =   [...array_filter($this->messages, fn($message) => $id === $message['messageId'])][0];
+        //dd($this->message);
+        Log::info('1️⃣SetMessage -> Message ID: ' . $id, ['message' => $this->message]);
 
-        foreach ($this->messages as $message) {
+        //dd($this->message);
+        /* foreach ($this->messages as $message) {
             //dd($message);
             if ($id === $message['messageId']) {
                 $this->message = $message;
                 Log::info('Message: ', $message);
                 break;
             }
-        }
+        } */
         return $this->message;
     }
 
+    /**
+     * Classify the given message
+     * This method uses the selected classifier to determine which category
+     * the message belongs to.
+     *
+     * @param array $message the message resource as an array
+     * @return array the message classified as an array
+     */
     public function classify($message)
     {
+        //dd($message);
         // set the classifier payload
         $payload = [
             'model' => Setting::where('key', 'selectedClassifier')->first()?->value ?? config('responder.classifier.model'),
@@ -114,29 +124,36 @@ class MessageListComponent extends Component
             ]
         ];
         // handle the response
-
+        Log::info('2️⃣Classification Payload: ', ['payload' => $payload]);
         try {
 
             $resp = $this->getResponse($payload);
-            //dd($resp);
-            $content = json_decode($resp['message']['content'], true);
-            if (!$content || !array_key_exists('category', $content) && !array_key_exists('action', $content) && !array_key_exists('instructions', $content)) {
-                session()->flash('message', 'Sorry, i had problems classifing this message, try again later.');
-                Log::error('❌CLASSIFICATION - The AI model generated an incorrect response, see the response below.', $resp);
-
-                return false;
-            }
-            Log::info('✅CLASSIFICATION Response:', $resp);
-            return $resp;
         } catch (\Throwable $th) {
             session()->flash('message', $th->getMessage());
             Log::error($th->getMessage());
         }
+
+        //dd($resp);
+        $content = json_decode($resp['message']['content'], true);
+        if (!$content || !array_key_exists('category', $content) && !array_key_exists('action', $content) && !array_key_exists('instructions', $content)) {
+            session()->flash('message', 'Sorry, i had problems classifing this message, try again later.');
+            Log::error('❌CLASSIFICATION - The AI model generated an incorrect response, see the response below.', $resp);
+
+            return false;
+        }
+        Log::info('✅CLASSIFICATION COMPLETE.', ['classification_response' => $resp]);
+        return $resp;
     }
 
 
+    /**
+     * Extract the data from the provided response
+     * @param $response
+     * @return array The data extracted from the response [category, action, instructions]
+     */
     public function extractDataFrom($response)
     {
+        Log::info(' 3️⃣Extract data from the response');
         if (!$response) {
             session()->flash('reply-generated', 'Error, try again.');
             return;
@@ -147,7 +164,7 @@ class MessageListComponent extends Component
         $category = $decoded['category'];
         $action = $decoded['action'];
         $instructions = $decoded['instructions'];
-        Log::info('data extraction completed');
+        Log::info('✅Extraction completed', ['data' => ['category' => $category, 'action' => $action, 'instructions' => $instructions]]);
         return [$category, $action, $instructions];
     }
 
@@ -157,17 +174,53 @@ class MessageListComponent extends Component
             session()->flash('reply-generated', 'No action required.');
             return;
         }
+        Log::info('4️⃣ performActions', ['instructions' => $instructions, 'action' => $action, 'category' => $category, $messageId => $this->message]);
 
-        Log::info('Action Request, instructions: ', ['instructions'=> $instructions]);
+        /* TODO:
+        - 1. categorize the message. `$this->categorizeMessage($messageId, $category);`
+        - 2. generate a reply `$this->generateReply($messageId, $instructions)`;
+        - 3. add a calendar entry if required `if ($instructions['insertEvent']) $this->updateCalendar($reply)`;
+         */
+
+        // $this->categorizeMessage($messageId, $category);
+
+        // Generate a reply for the given message
 
         $this->generateReply($messageId, $instructions);
 
+        // Add a calendar entry if required
+        //dd($this->reply[$messageId]);
+
+        if ($instructions == 'insertEvent' ||  array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) && json_decode($this->reply[$messageId]['message']['content'], true)['event']) {
+
+            /* TODO:
+        before we actually schedule an appointment for the given reply we shoud check if we are actually free for that dateTime
+        - get the events for the requested date and time
+        - check if the user is free for that dateTime
+        - if the user is free for that dateTime then schedule the appointment
+        - else return an error message that the user is not free for that dateTime
+        - update the reply accordingly to request a new datetime for proposed appointment
+        */
+            // get the requested datees fro mteh reply
+            $startDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['start']['dateTime']);
+            $endDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['end']['dateTime']);
+
+            // check calendar availability
+            $is_available = $this->checkCalendarAvailability($startDateTime, $endDateTime);
+
+            //dd($is_available);
+            // schedule the appointment if available or propose a different date/time
+            if ($is_available) {
+                $this->updateCalendar($messageId, $this->reply[$messageId]);
+            }
+        }
     }
 
 
 
-    public function generateReply($messageId, $instructions)
+    private function generateReply($messageId, $instructions)
     {
+        Log::info('5️⃣ Generate a reply...');
         //dd($messageId, $instructions);
         //dd('reply to the message', $this->message);
         // prepare the payload to process the selected message
@@ -177,12 +230,11 @@ class MessageListComponent extends Component
         $this->reply[$messageId] = $this->getResponse($payload); // Get the response
         // inform the user that the generation was completed
         session()->flash('reply-generated', 'Reply Generated successfully');
-        Log::info('Reply generated', $this->reply[$messageId]);
-        $this->dispatch('reply-generated', $this->reply[$messageId]);
+        Log::info('✅Reply generated', ['reply' => $this->reply[$messageId]]);
 
-        if ($instructions == 'insertEvent') {
-            $this->updateCalendar($messageId, $this->reply[$messageId]);
-        }
+        //$this->dispatch('reply-generated', $this->reply[$messageId]);
+
+
     }
 
 
@@ -196,7 +248,7 @@ class MessageListComponent extends Component
     {
 
         if (is_array($instructions)) $instructions = join(',', $instructions);
-       // if ($instructions) $message = ['role'=> 'user', 'content'=> "Instructions: $instructions"];
+        // if ($instructions) $message = ['role'=> 'user', 'content'=> "Instructions: $instructions"];
         //dd($instructions, $this->message);
         return [
             'model' => Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model'),
@@ -222,8 +274,10 @@ class MessageListComponent extends Component
      */
     private function getResponse($payload): array
     {
-        Log::info("PAYLOAD FOR OLLAMA", $payload);
-        $response = Http::timeout(5000)->post(Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server'), $payload);
+
+        $response = Http::timeout(5000)
+            ->post(Setting::where('key', 'ollamaServerAddress')
+                ->first()?->value ?? config('responder.assistant.server'), $payload);
 
         $response->onError(function ($message) {
             Log::error('❌ Error: ' . $message);
@@ -232,6 +286,22 @@ class MessageListComponent extends Component
 
         //dd($response->json());
         return $response->json();
+    }
+
+
+
+
+    private function checkCalendarAvailability($startDateTime, $endDateTime){
+
+
+        /* Return true if available / false otherwise */
+
+        $events = Event::get($startDateTime, $endDateTime);
+        if ($events->count() === 0){
+            return true;
+        }
+        return false;
+        //dd($events->count() === 0, $startDateTime, $endDateTime);
     }
 
 
@@ -244,6 +314,9 @@ class MessageListComponent extends Component
      */
     public function updateCalendar($messageId, $reply)
     {
+
+
+        Log::info('6️⃣ Updating calendar for the previous reply');
         /* TODO:
         Handle the reply here, inside the reply thereis the google calendar event json
         to use with the spatie package to insert calendar events. */
@@ -254,10 +327,23 @@ class MessageListComponent extends Component
         if (!$replyContent['event']) {
             throw new \Exception("Missing event key in the provided response", 1);
         }
-
-        dd($replyContent['event'], $replyContent['reply']);
+        Log::info('👉 Reply content', ['reply' => $replyContent]);
+        //dd($replyContent['event'], $replyContent['reply']);
 
         //https://packagist.org/packages/spatie/laravel-google-calendar
+
+        $event = new Event();
+        $event->name = $replyContent['event']['summary'];
+        $event->description = $replyContent['event']['description'] ?? '';
+        $event->startDateTime = Carbon::parse($replyContent['event']['start']['dateTime']);
+        $event->endDateTime = Carbon::parse($replyContent['event']['end']['dateTime']);
+        //$event->addAttendee($replyContent['event']['attendees'] ?? []);
+        $event->save();
+        Log::info('✅Event created', ['event' => $event]);
+        //dd($event);
+        session()->flash('message', $replyContent['reply'] . 'event ' . $replyContent['event']['summary'] . 'was created');
+
+        return redirect()->back();
     }
 
     /**
@@ -267,10 +353,12 @@ class MessageListComponent extends Component
      * @param $category the category to move it into
      * @return void
      */
-    public function moveMessage($message, $category)
+    public function categorizeMessage($message, $category)
     {
         dd('TODO: Move the message in a dedicated folder on the IMAP server', $message, $category);
         // TODO:
         Log::info('Move the message', ['message' => $message, 'category' => $category]);
     }
+
+
 }
