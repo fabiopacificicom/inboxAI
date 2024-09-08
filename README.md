@@ -51,3 +51,11 @@ Build for windows
 php artisan native:build win x64
 # press ctrl+c if the terminal is stuck
 ```
+
+
+## Roadmap
+- [ ] Add Documentation
+- [ ] Classification
+- [ ] Automate the process
+- [ ] Create a Native windows app (WIP)
+- [ ] Create a Docker image
