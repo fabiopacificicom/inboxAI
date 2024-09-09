@@ -140,7 +140,7 @@ trait Processable
         // Add a calendar entry if required
         //dd($this->reply[$messageId]);
 
-        if ($instructions == 'insertEvent' ||  array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) && json_decode($this->reply[$messageId]['message']['content'], true)['event']) {
+        if ($instructions == 'insertEvent' ||  array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) && json_decode($this->reply[$messageId]['message']['content'], true)['event'] === true) {
 
             // get the requested datees fro mteh reply
             $startDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['start']['dateTime']);

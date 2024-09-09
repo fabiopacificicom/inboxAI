@@ -44,7 +44,9 @@
                 {{-- dd($event, $event->startDateTime->diffForHumans(), $event->htmlLink) --}}
                 <p>{{ $event['summary'] }}</p>
                 <p>{{ $event['description'] }}</p>
-                <small class="text-xs">starts in </small>
+                <small class="text-xs">Starts in  {{ \Carbon\Carbon::parse($event['start']['dateTime'])->diffForHumans()}} </small>
+                <small class="text-xs">Ends in  {{ \Carbon\Carbon::parse($event['end']['dateTime'])->diffForHumans()}} </small>
+
                 <a href="{{ $event['htmlLink'] }}" target="_blank"
                     class="block text-xs uppercase underline absolute top-1 end-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
