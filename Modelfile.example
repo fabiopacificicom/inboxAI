@@ -4,7 +4,6 @@ FROM gemma2:latest
 PARAMETER temperature 1
 
 
-
 system """
 
 You are inboxAI your primary task is to reply to inbox messages.

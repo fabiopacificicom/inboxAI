@@ -2,6 +2,7 @@
 
 namespace App\Livewire\AiReply;
 
+use App\Models\Message;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
@@ -57,6 +58,7 @@ class MailboxConnectionComponent extends Component
     #[On('sync-mailbox')]
     public function connectMailbox()
     {
+        // deletes all messages from the cache
         Cache::forget('messages');
         $this->validate(); // Ensure this is uncommented to validate inputs
         $this->fetching = true;
@@ -109,6 +111,9 @@ class MailboxConnectionComponent extends Component
         );
     }
 
+    /**
+     * @param Mailbox $mailbox IMAP mailbox connection
+     */
     private function searchEmails($mailbox)
     {
         // Get all emails (messages)
@@ -157,23 +162,45 @@ class MailboxConnectionComponent extends Component
                 //dd($num, $head, $mail);
 
                 $message = [
-                    'messageId' => $mail->messageId,
-                    'isSeen' => $mail->isSeen,
-                    'isAnswered' => $mail->isAnswered,
-                    'isRecent' => $mail->isRecent,
-                    'isFlagged' => $mail->isFlagged,
-                    'isDeleted' => $mail->isDeleted,
-                    'isDraft' => $mail->isDraft,
+                    'message_identifier' => $mail->messageId,
+                    'is_seen' => $mail->isSeen,
+                    'is_answered' => $mail->isAnswered,
+                    'is_recent' => $mail->isRecent,
+                    'is_flagged' => $mail->isFlagged,
+                    'is_deleted' => $mail->isDeleted,
+                    'is_draft' => $mail->isDraft,
                     'subject' => $mail->subject,
                     'from' => $mail->fromAddress,
                     'sender' => isset($mail->fromName) ? $mail->fromName : '',
-                    'replyToAddresses' => array_keys($mail->replyTo),
+                    'reply_to_addresses' => array_keys($mail->replyTo),
                     'date' => $this->normalizeDate($mail->date),
-                    'content' => str_replace(["\t","\r", "\n"], "", $mail->textPlain)
+                    'content' => str_replace(["\t", "\r", "\n"], "", $mail->textPlain)
                     // Add more fields as needed
                 ];
                 //dd($message);
-                return $message;
+
+                //dd($message['message_identifier'], $message);
+
+                $messageObject = Message::updateOrCreate(['message_identifier' => $mail->messageId], [
+                    'message_identifier' => $message['message_identifier'],
+                    'subject' => $message['subject'],
+                    'from' =>  $message['from'],
+                    'sender' => $message['sender'],
+                    'reply_to_addresses'  => $message['reply_to_addresses'],
+                    'date' => $message['date'],
+                    'content' => $message['content'],
+                    'is_seen' => $message['is_seen'],
+                    'is_answered' => $message['is_answered'],
+                    'is_recent' => $message['is_recent'],
+                    'is_flagged' => $message['is_flagged'],
+                    'is_deleted' => $message['is_deleted'],
+                    'is_draft' => $message['is_draft']
+
+                ]);
+                //dd($messageObject);
+
+
+                return $messageObject;
             }, $mailsIds);
         });
 
@@ -214,7 +241,8 @@ class MailboxConnectionComponent extends Component
         };
     }
 
-    private function normalizeDate($dateString) {
+    private function normalizeDate($dateString)
+    {
         //dd($dateString);
         // Define an array of known formats
         $knownFormats = [
@@ -236,7 +264,6 @@ class MailboxConnectionComponent extends Component
             if ($date !== false) {
                 return $date;
             }
-
         }
 
         // As a last resort, try letting Carbon parse the date automatically
@@ -245,9 +272,8 @@ class MailboxConnectionComponent extends Component
         } catch (\Exception $e) {
             // Handle the exception if the date cannot be parsed
             // This could log an error, return null, or use a default date
-            Log::error( '❌MailBoxConnectionComponent Error:' . $e->getMessage(), ['date'=> $dateString]);
+            Log::error('❌MailBoxConnectionComponent Error:' . $e->getMessage(), ['date' => $dateString]);
             return null;
         }
     }
-
 }

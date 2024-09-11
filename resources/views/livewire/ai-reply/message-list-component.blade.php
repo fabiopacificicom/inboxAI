@@ -49,7 +49,7 @@
                                 <strong><em>Sender:</em></strong> {{ $message['sender'] }}<br>
                                 <strong><em>From:</em></strong> {{ $message['from'] }} <br>
                                 <strong><em>Reply to:</em></strong>
-                                {{ Arr::join($message['replyToAddresses'], ',') }}
+                                {{ Arr::join($message['reply_to_addresses'], ',') }}
                             </td>
                             {{-- /sender details --}}
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -68,16 +68,16 @@
                                     <header class="modal-header flex justify-between items-center">
                                         <button
                                             class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                                            wire:click="processMessage('{{ $message['messageId'] }}')"
+                                            wire:click="processMessage('{{ $message['message_identifier'] }}')"
                                             wire:loading.attr="disabled"
-                                            wire:target="processMessage('{{ $message['messageId'] }}')"
+                                            wire:target="processMessage('{{ $message['message_identifier'] }}')"
                                             wire:loading.class="opacity-50 cursor-not-allowed">
                                             <span wire:loading.remove
-                                                wire:target="processMessage('{{ $message['messageId'] }}')">
+                                                wire:target="processMessage('{{ $message['message_identifier'] }}')">
                                                 Process Message
                                             </span>
                                             <span wire:loading
-                                                wire:target="processMessage('{{ $message['messageId'] }}')"
+                                                wire:target="processMessage('{{ $message['message_identifier'] }}')"
                                                 class="absolute left-0 right-0 mx-auto">
                                                 <svg class="animate-spin h-5 w-5 mr-3"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -90,7 +90,7 @@
                                                 </svg>
                                             </span>
                                             <span wire:loading
-                                                wire:target="processMessage('{{ $message['messageId'] }}')">
+                                                wire:target="processMessage('{{ $message['message_identifier'] }}')">
                                                 In progress
                                             </span>
                                         </button>
@@ -102,21 +102,21 @@
                                     </header>
                                     {{-- /.modal-header --}}
 
-                                    @if (array_key_exists($message['messageId'], $reply))
+                                    @if (array_key_exists($message['message_identifier'], $reply))
                                         @livewire(
                                             'ai-reply.reply-form-component',
                                             [
-                                                'reply' => $reply[$message['messageId']],
+                                                'reply' => $reply[$message['message_identifier']],
                                                 'message' => $message,
                                             ],
-                                            key($message['messageId'])
+                                            key($message['message_identifier'])
                                         )
                                     @endif
                                     {{-- /Livewire ai-reply.reply-form-component --}}
 
                                     <div class="metadata py-4">
                                         <p class="text-gray-900 leading-none">
-                                            Message ID: {{ $message['messageId'] }}
+                                            Message ID: {{ $message['message_identifier'] }}
                                         </p>
                                         <p class="text-gray-600">
                                             Sender: {{ $message['sender'] }}
@@ -129,9 +129,9 @@
                                         <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
                                             <!-- Blade Template -->
                                             @php
-                                                $messageId = 'emailIframe-' . md5($message['messageId']);
+                                                $message_identifier = 'emailIframe-' . md5($message['message_identifier']);
                                             @endphp
-                                            <div class="overflow-y-auto h-32" id="wrapper-{{ $messageId }}">
+                                            <div class="overflow-y-auto h-32" id="wrapper-{{ $message_identifier }}">
                                                 {{ $message['content'] }}
                                             </div>
 

@@ -2,12 +2,14 @@
 
 namespace App\Livewire\AiReply;
 
+use App\Models\Message;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use App\Traits\Calendarable;
 use App\Traits\Processable;
+use App\Models\Setting;
 
 class MessageListComponent extends Component
 {
@@ -17,8 +19,39 @@ class MessageListComponent extends Component
 
     public function mount()
     {
-        $this->messages = Cache::get('messages', []);
+        // get the limit of messages to be displayed from the settings table
+        $limit = Setting::where('key', 'limit')->first()->value;
+        $period = Setting::where('key', 'filter')->first()->value;
+        //dd($limit, $period);
+
+
+        // Define a mapping of intervals to their corresponding number of days
+        $intervalMap = [
+            'day' => 1,
+            'week' => 7,
+            'month' => 30, // assuming 30 days in a month for simplicity
+        ];
+
+        // Calculate the timestamp for the period (e.g. today minus the specified interval)
+        $timestamp = now()->subDays($intervalMap[$period]);
+        //dd($timestamp, $limit, $period, $intervalMap[$period]);
+
+        // Delete any messages that are older than the calculated timestamp
+        Message::where('date', '<=', $timestamp)->delete();
+        // Clean the cached messages
+        Cache::forget('messages');
+        //dd(Message::all());
+
+        // Retrieve the latest N messages from the database, where N is the maximum allowed limit
+        $messages = Message::orderByDesc('created_at')->take($limit)->get();
+        // Update the cache with the retrieved and limited messages
+        Cache::forever('messages', $messages);
+
+
+        $this->messages = Cache::get('messages', $messages);
     }
+
+
 
     public function render()
     {
