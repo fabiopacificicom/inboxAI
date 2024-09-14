@@ -9,6 +9,7 @@ use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Locked;
 use PDO;
 
 class MailboxConnectForm extends Component
@@ -19,6 +20,7 @@ class MailboxConnectForm extends Component
     public $port = '993';
     public $encryption = 'ssl';
     public $username;
+    #[Locked]
     public $password;
     public $filter = 'day'; // Default filter
     // messages processing properties

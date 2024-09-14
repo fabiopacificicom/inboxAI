@@ -79,10 +79,10 @@ class MessageListComponent extends Component
      * @param $data
      * @return void
      */
-    public function updateMessages($data)
+    public function updateMessages()
     {
         //dd($data);
-        $this->messages = $data;
+        $this->messages = Cache::get('messages');
         //dd($this->messages);
     }
 

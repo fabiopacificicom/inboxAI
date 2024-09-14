@@ -121,6 +121,8 @@ class MailboxConnectionComponent extends Component
      */
     private function searchEmails($mailbox)
     {
+
+        //dd($mailbox);
         // Get all emails (messages)
         // PHP.net imap_search criteria: http://php.net/manual/en/function.imap-search.php
 
@@ -140,6 +142,7 @@ class MailboxConnectionComponent extends Component
 
     private function fetchEmailMessages($mailbox, $mailsIds, $limit = 15)
     {
+        //dd($mailbox, $mailsIds);
 
         if (!$mailsIds) {
             //dd('here');
@@ -149,7 +152,7 @@ class MailboxConnectionComponent extends Component
         }
         // Put the latest email on top of listing
         rsort($mailsIds);
-
+        //dd($mailsIds);
         // Get the last 15 emails only (@todo make this dynamic)
         array_splice($mailsIds, $limit);
 
@@ -207,6 +210,7 @@ class MailboxConnectionComponent extends Component
 
                 return $messageObject;
             }, $mailsIds);
+            //dd($messages);
         });
 
 
@@ -214,7 +218,7 @@ class MailboxConnectionComponent extends Component
         //dd($messages);
 
 
-        $this->dispatch('mailbox-sync-event', $messages)->to(MessageListComponent::class);
+        $this->dispatch('mailbox-sync-event')->to(MessageListComponent::class);
     }
 
     private function handleConnectionException($ex)

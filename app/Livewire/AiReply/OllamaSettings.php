@@ -30,15 +30,7 @@ class OllamaSettings extends Component
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
         $this->classifierSystem = $classifierSystem;
-        $this->selectedClassifier = $selectedClassifier;
 
-
-
-        /* $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
-        $this->models = $this->getModels();
-
- */
-        //dd($this->ollamaServerAddress);
     }
 
     public function render()
@@ -74,11 +66,6 @@ class OllamaSettings extends Component
             $this->checkOllamaConnection($value);
             // save in the settings table
         }
-
-
-        //$this->dispatch($name, $value);
-        //dd(Setting::all());
-
     }
 
 
