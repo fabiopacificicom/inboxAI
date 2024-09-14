@@ -6,8 +6,8 @@
             </h2>
 
             <div class="flex items-center">
-                @livewire('show-calendar')
-                @livewire('ai-reply.mailbox-connection-component')
+                @livewire('show-calendar', ['settings' => $settings])
+                @livewire('ai-reply.mailbox-connection-component', ['settings' => $settings])
             </div>
         </div>
 
@@ -19,7 +19,8 @@
 
 
                 {{-- New Main mailbox assistant component --}}
-                <livewire:ai-reply.main-mailbox-assistant-component />
+
+            @livewire('ai-reply.main-mailbox-assistant-component', ['settings' => $settings])
 
 
 

@@ -24,7 +24,7 @@
             Reply
         </button>
         @if (session('reply-sent'))
-            <span class="text-green-500">{{ session('reply-sent') }}</span>
+            <span class="text-gray-700">{{ session('reply-sent') }}</span>
         @endif
     </div>
     </form>

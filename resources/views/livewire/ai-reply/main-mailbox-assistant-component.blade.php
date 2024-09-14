@@ -20,7 +20,7 @@
                 'selectedClassifier' => $selectedClassifier,
                 'assistantSystem' => $assistantSystem,
                 'classifierSystem' => $classifierSystem,
-                'models' => $models,
+              /*   'models' => $models, */
                 'ollamaServerAddress' => $ollamaServerAddress,
             ])
         </dialog>
@@ -28,6 +28,8 @@
 
 
     @livewire('ai-reply.message-list-component', [
+
+        'settings' => $settings,
         'selectedModel' => $selectedModel,
         'assistantSystem' => $assistantSystem,
         'ollamaServerAddress' => $ollamaServerAddress,

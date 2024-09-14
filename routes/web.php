@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Mailbox;
@@ -13,7 +14,12 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
 
-    return view('dashboard');
+
+    $settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {
+        return [$item['key'] => $item['value']];
+    });
+
+    return view('dashboard', compact('settings'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

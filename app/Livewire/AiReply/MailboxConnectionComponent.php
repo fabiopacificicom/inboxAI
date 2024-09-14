@@ -43,16 +43,17 @@ class MailboxConnectionComponent extends Component
         return view('livewire.ai-reply.mailbox-connection-component');
     }
 
-    public function mount()
+    public function mount($settings)
     {
+
         // mailbox
-        $this->username = Setting::where('key', 'username')->first()?->value ?? config('responder.imap.username');
-        $this->password = Setting::where('key', 'password')->first()?->value ?? config('responder.imap.password');
-        $this->host = Setting::where('key', 'host')->first()?->value ?? config('responder.imap.server');
-        $this->port = Setting::where('key', 'port')->first()?->value ?? '993';
-        $this->encryption = Setting::where('key', 'encryption')->first()?->value ?? 'ssl';
-        $this->filter = Setting::where('key', 'filter')->first()?->value ?? 'day';
-        $this->limit = Setting::where('key', 'limit')->first()?->value ?? 15;
+        $this->username = $settings['username'] ?? config('responder.imap.username');
+        $this->password = $settings['password'] ?? config('responder.imap.password');
+        $this->host = $settings['host'] ?? config('responder.imap.server');
+        $this->port = $settings['port'] ?? '993';
+        $this->encryption = $settings['encryption'] ?? 'ssl';
+        $this->filter = $settings['filter'] ?? 'day';
+        $this->limit = $settings['limit'] ?? 15;
     }
 
     #[On('sync-mailbox')]
@@ -60,7 +61,11 @@ class MailboxConnectionComponent extends Component
     {
         // deletes all messages from the cache
         Cache::forget('messages');
-        $this->validate(); // Ensure this is uncommented to validate inputs
+
+        // Ensure this is uncommented to validate inputs
+        $this->validate();
+
+        // set the loading indicator
         $this->fetching = true;
 
         try {

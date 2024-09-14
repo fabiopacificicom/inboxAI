@@ -28,7 +28,19 @@ trait Processable
      */
     private function setMessage($id)
     {
-        $this->message =   [...array_filter($this->messages, fn($message) => $id === $message['messageId'])][0];
+        //dd($this->messages);
+
+        // if is an array
+        if (is_array($this->messages)) {
+            $this->message =   [...array_filter($this->messages, fn($message) => $id === $message['message_identifier'])][0];
+        } else {
+            // is a collection
+            $this->message = $this->messages->filter(fn($message) => $id === $message['message_identifier'])->first();
+
+        }
+
+
+
         //dd($this->message);
         Log::info('1️⃣SetMessage -> Message ID: ' . $id, ['message' => $this->message]);
         return $this->message;
@@ -168,6 +180,7 @@ trait Processable
      */
     public function categorizeMessage($id, $category)
     {
+
         dd('TODO: Move the message in a dedicated folder on the IMAP server', $id, $category);
         // TODO:
         Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
@@ -230,6 +243,4 @@ trait Processable
             ]
         ];
     }
-
-
 }

@@ -16,9 +16,9 @@ class ShowCalendar extends Component
     }
 
 
-    public function mount()
+    public function mount($settings)
     {
-        $this->period = Setting::where('key', 'filter')->first()?->value ?? 'day';
+        $this->period = $settings['filter'] ?? 'day';
         $this->getEvents();
         // dd($this->events);
     }

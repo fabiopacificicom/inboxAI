@@ -23,10 +23,10 @@ class OllamaSettings extends Component
     public $ollamaServerAddress;
     public $connectionError = false;
 
-    public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem, $classifierSystem, $selectedClassifier)
+    public function mount($ollamaServerAddress, $selectedModel, $assistantSystem, $classifierSystem, $selectedClassifier)
     {
         $this->ollamaServerAddress = $ollamaServerAddress;
-        $this->models = $models;
+        $this->models = $this->getModels();
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
         $this->classifierSystem = $classifierSystem;
@@ -48,8 +48,17 @@ class OllamaSettings extends Component
 
     public function getModels()
     {
-        $response = Http::get(config('responder.assistant.tags'));
-        return $response->json();
+        try {
+            //code...
+            $response = Http::get(config('responder.assistant.tags'));
+            return $response->json();
+            $this->connectionError = false;
+        } catch (\Throwable $th) {
+            //throw $th;
+            session()->flash('message', $th->getMessage());
+            $this->connectionError = true;
+            Log::error($th->getMessage());
+        }
     }
 
     public function updated($name, $value)
@@ -79,7 +88,7 @@ class OllamaSettings extends Component
             $response = Http::get($address);
             $this->connectionError = false;
         } catch (\Throwable $th) {
-            $this->connectionError = 'Connection Failed. Check the logs for more details.';
+            $this->connectionError = true;
             Log::error($th->getMessage());
         }
     }

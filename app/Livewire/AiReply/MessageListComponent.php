@@ -16,13 +16,35 @@ class MessageListComponent extends Component
 
     use WithPagination, Calendarable, Processable;
 
-
-    public function mount()
+    public $settings;
+    public function mount($settings)
     {
-        // get the limit of messages to be displayed from the settings table
-        $limit = Setting::where('key', 'limit')->first()->value;
+
+        // clean up older messages from the cache and db
+        //$this->removeOlderMessages();
+        // Retrieve the latest N messages from the database, where N is the maximum allowed limit
+        $this->settings = $settings;
+        //dd(Cache::get('messages'));
+        $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
+    }
+
+
+    private function retreiveLatestMessages(){
+        $limit = $this->settings['limit'] ?? 20;
+        $messages = Message::orderByDesc('date')->take($limit)->get();
+        //dd($messages);
+        // Update the cache with the retrieved and limited messages
+        Cache::forever('messages', $messages);
+
+        return $messages;
+
+    }
+
+    private function removeOlderMessages()
+    {
+        // get the period of messages to be displayed from the settings table
         $period = Setting::where('key', 'filter')->first()->value;
-        //dd($limit, $period);
+        //dd($period);
 
 
         // Define a mapping of intervals to their corresponding number of days
@@ -41,14 +63,6 @@ class MessageListComponent extends Component
         // Clean the cached messages
         Cache::forget('messages');
         //dd(Message::all());
-
-        // Retrieve the latest N messages from the database, where N is the maximum allowed limit
-        $messages = Message::orderByDesc('created_at')->take($limit)->get();
-        // Update the cache with the retrieved and limited messages
-        Cache::forever('messages', $messages);
-
-
-        $this->messages = Cache::get('messages', $messages);
     }
 
 

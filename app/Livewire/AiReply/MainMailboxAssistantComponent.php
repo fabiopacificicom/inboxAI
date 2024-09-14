@@ -15,7 +15,7 @@ class MainMailboxAssistantComponent extends Component
     public $messages = [];
     public $fetching = false;
     // model processor properties
-    public $models;
+    //public $models;
     public $selectedModel;
     public $assistantSystem;
     public $classifierSystem;
@@ -23,15 +23,18 @@ class MainMailboxAssistantComponent extends Component
 
     public $ollamaServerAddress;
 
-    public function mount()
+    public $settings;
+    public function mount($settings)
     {
+        $this->settings = $settings;
         // ollama server settings
-        $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
-        $this->models = $this->getModels();
-        $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
-        $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
-        $this->classifierSystem = Setting::where('key', 'classifierSystem')->first()?->value ?? config('responder.classifier.system');
-        $this->selectedClassifier = Setting::where('key', 'selectedClassifier')->first()?->value ?? config('responder.classifier.model');
+        $this->ollamaServerAddress = $settings['ollamaServerAddress'] ?? config('responder.assistant.server');
+        //$this->models = $this->getModels();
+        //dd($this->models);
+        $this->selectedModel = $settings['selectedModel'] ?? config('responder.assistant.model');
+        $this->assistantSystem = $settings['assistantSystem'] ?? config('responder.assistant.system');
+        $this->classifierSystem = $settings['classifierSystem'] ?? config('responder.classifier.system');
+        $this->selectedClassifier = $settings['selectedClassifier'] ?? config('responder.classifier.model');
 
     }
 
@@ -40,12 +43,19 @@ class MainMailboxAssistantComponent extends Component
         return view('livewire.ai-reply.main-mailbox-assistant-component');
     }
 
-    public function getModels()
+    /* public function getModels()
     {
-        $response = Http::get(config('responder.assistant.tags'));
-        return $response->json();
+        try {
+            //code...
+            $response = Http::get(config('responder.assistant.tags'));
+            return $response->json();
+        } catch (\Throwable $th) {
+            //throw $th;
+            session()->flash('message', $th->getMessage());
+            Log::error($th->getMessage());
+        }
     }
-
+ */
 
 
 }

@@ -28,13 +28,17 @@
             <select name="assistant-model" id="assistant-model" wire:model.live="selectedModel"
                 class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
-                @forelse ($models['models'] as $model)
-                    <option value="{{ $model['model'] }}" {{ $model['model'] === $selectedModel ? 'selected' : '' }}>
-                        {{ $model['name'] }}
-                    </option>
-                @empty
-                    <option value="" disabled>no models available</option>
-                @endforelse
+
+                @if (is_array($models) && array_key_exists('models', $models))
+                    @forelse ($models['models'] as $model)
+                        <option value="{{ $model['model'] }}"
+                            {{ $model['model'] === $selectedModel ? 'selected' : '' }}>
+                            {{ $model['name'] }}
+                        </option>
+                    @empty
+                        <option value="" disabled>no models available</option>
+                    @endforelse
+                @endif
             </select>
         </div>
 
@@ -42,14 +46,17 @@
             <label for="classifier-model" class="block text-gray-600">Classifier model</label>
             <select name="classifier-model" id="classifier-model" wire:model.live="selectedClassifier"
                 class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+                @if (is_array($models) && array_key_exists('models', $models))
 
-                @forelse ($models['models'] as $model)
-                    <option value="{{ $model['model'] }}" {{ $model['model'] === $selectedClassifier ? 'selected' : '' }}>
-                        {{ $model['name'] }}
-                    </option>
-                @empty
-                    <option value="" disabled>no models available</option>
-                @endforelse
+                    @forelse ($models['models'] as $model)
+                        <option value="{{ $model['model'] }}"
+                            {{ $model['model'] === $selectedClassifier ? 'selected' : '' }}>
+                            {{ $model['name'] }}
+                        </option>
+                    @empty
+                        <option value="" disabled>no models available</option>
+                    @endforelse
+                @endif
             </select>
         </div>
         {{-- /models --}}
