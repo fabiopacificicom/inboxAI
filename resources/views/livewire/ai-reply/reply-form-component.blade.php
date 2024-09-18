@@ -1,7 +1,8 @@
-<div id="reply-area" class="p-4 bg-white shadow-md rounded-lg">
-    <button wire:click="replyMessage()" class="bg-gray-800 text-white p-1 rounded">Generate Reply</button>
+<div id="reply-area" class="p-4 bg-white shadow-md rounded-lg" wire:key="{{ $message->id }}">
+    {{--     <button wire:click="replyMessage()" class="bg-gray-800 text-white p-1 rounded">Generate Reply</button>
+ --}}
     @if (session('reply-generated'))
-        <div class="text-green-500">{{ session('reply-generated') }}</span>
+        <div class="text-gray-700">{{ session('reply-generated') }}</span>
     @endif
     @if (session()->has('message'))
         <div class="alert bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">

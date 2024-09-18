@@ -39,7 +39,7 @@
                     {{-- @dd($messages) --}}
                     @forelse ($messages as $index => $message)
                     {{-- @dd($message) --}}
-                        <tr>
+                        <tr wire:key="{{$message['message_identifier']}}">
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
                             </td>

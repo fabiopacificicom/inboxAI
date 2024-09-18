@@ -109,6 +109,6 @@ class MessageListComponent extends Component
         //dd($category, $action, $instructions);
 
         // 4. Perform the actions on the message based on the action
-        $this->performActions($action, $instructions, $messageId, $category);
+        $this->performActions($action, $instructions, $messageId, $category, $settings = $this->settings);
     }
 }

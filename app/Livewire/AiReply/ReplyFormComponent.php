@@ -43,7 +43,7 @@ class ReplyFormComponent extends Component
         $this->content = $value;
     }
 
-    public function replyMessage()
+/*     public function replyMessage()
     {
         //dd($this->content, $this->message, $this->reply);
         // Process the message
@@ -61,7 +61,7 @@ class ReplyFormComponent extends Component
         if (array_key_exists('event', $replyArray) && $replyArray['event']) {
             $this->calendar($replyArray['event']);
         }
-    }
+    } */
 
 
     public function sendReply()
@@ -71,7 +71,7 @@ class ReplyFormComponent extends Component
 
         //dd($this->content, $this->message, $this->reply);
         // sent the reply email
-        Mail::send(new InboxAiReplyMailable($this->content, $this->message));
+        Mail::to($this->message->reply_to_addresses)->send(new InboxAiReplyMailable($this->content, $this->message));
         // Dispatch an event to notify other components that a reply has been sent
         session()->flash('reply-sent', 'Message sent successfully');
 

@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use App\Traits\HandleAiResponse;
 use Carbon\Carbon;
+use PhpImap\Mailbox;
+use Illuminate\Support\Str;
+use PhpImap\Imap;
 
 trait Processable
 {
@@ -36,7 +39,6 @@ trait Processable
         } else {
             // is a collection
             $this->message = $this->messages->filter(fn($message) => $id === $message['message_identifier'])->first();
-
         }
 
 
@@ -129,7 +131,7 @@ trait Processable
      * @param $category
      * @return void
      */
-    private function performActions($action, $instructions, $messageId, $category = null)
+    private function performActions($action, $instructions, $messageId, $category = null, $settings = null)
     {
         if (!$action) {
             session()->flash('reply-generated', 'No action required.');
@@ -143,7 +145,7 @@ trait Processable
         - 3. add a calendar entry if required `if ($instructions['insertEvent']) $this->updateCalendar($reply)`;
          */
 
-        //$this->categorizeMessage($messageId, $category);
+        $this->categorizeMessage($messageId, $category, $settings);
 
         // Generate a reply for the given message
 
@@ -178,10 +180,32 @@ trait Processable
      * @param $category the category to move it into
      * @return void
      */
-    public function categorizeMessage($id, $category)
+    public function categorizeMessage($id, $category, $settings)
     {
+        $username = $settings['username'] ?? config('responder.imap.username');
+        $password = $settings['password'] ?? config('responder.imap.password');
+        $host = $settings['host'] ?? config('responder.imap.server');
+        $port = $settings['port'] ?? '993';
 
-        dd('TODO: Move the message in a dedicated folder on the IMAP server', $id, $category);
+        if ($category !== 'inbox') {
+            # code...
+            $mailbox = new Mailbox(
+                '{' . $host . ':' . $port . '/imap/ssl}' . Str::upper($category), // IMAP server and mailbox folder
+                $username, // Username for the before configured mailbox
+                $password, // Password for the before configured username
+                storage_path('app'), // Directory, where attachments will be saved (optional)
+                'UTF-8', // Server encoding (optional)
+                true, // Trim leading/ending whitespaces of IMAP path (optional)
+                true // Attachment filename mode (optional; false = random filename; true = original filename)
+            );
+
+            //$mail = $mailbox->getMail($id);
+
+            //dd($id, $category, $mailbox);
+            $mailbox->moveMail($id, $category);
+        }
+        //dd('TODO: Move the message in a dedicated folder on the IMAP server', $id, $category);
+
         // TODO:
         Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
     }

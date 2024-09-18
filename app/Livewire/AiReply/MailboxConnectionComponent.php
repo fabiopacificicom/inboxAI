@@ -82,7 +82,7 @@ class MailboxConnectionComponent extends Component
         }
     }
 
-    private function establishMailboxConnection()
+    private function establishMailboxConnection($folder = 'INBOX')
     {
 
 
@@ -105,7 +105,7 @@ class MailboxConnectionComponent extends Component
 
 
         return new Mailbox(
-            '{' . $this->host . ':' . $this->port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
+            '{' . $this->host . ':' . $this->port . '/imap/ssl}' . $folder, // IMAP server and mailbox folder
             $this->username, // Username for the before configured mailbox
             $this->password, // Password for the before configured username
             storage_path('app'), // Directory, where attachments will be saved (optional)
@@ -167,10 +167,10 @@ class MailboxConnectionComponent extends Component
                 //dd($head);
                 $markAsSeen = true;
                 $mail = $mailbox->getMail($num, $markAsSeen);
-                //dd($num, $head, $mail);
+                //dd($num, $mail);
 
                 $message = [
-                    'message_identifier' => $mail->messageId,
+                    'message_identifier' => $mail->id,
                     'is_seen' => $mail->isSeen,
                     'is_answered' => $mail->isAnswered,
                     'is_recent' => $mail->isRecent,
