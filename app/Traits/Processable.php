@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use App\Traits\HandleAiResponse;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use PhpImap\Mailbox;
 use Illuminate\Support\Str;
 use PhpImap\Imap;
@@ -17,6 +18,7 @@ trait Processable
     public $messages;
     public $reply = [];
     public $fetching = false;
+    public $processingMessages = [];
 
 
     /**
@@ -91,11 +93,12 @@ trait Processable
         //dd($resp);
         $content = json_decode($resp['message']['content'], true);
         if (!$content || !array_key_exists('category', $content) && !array_key_exists('action', $content) && !array_key_exists('instructions', $content)) {
-            session()->flash('message', 'Sorry, i had problems classifing this message, try again later.');
+            $this->processingMessages[] = [ '❌' => 'Classification failed, try again later.'];
             Log::error('❌CLASSIFICATION - The AI model generated an incorrect response, see the response below.', $resp);
 
             return false;
         }
+        $this->processingMessages[] = ['✅'=>'Message classified successfully'];
         Log::info('✅CLASSIFICATION COMPLETE.', ['classification_response' => $resp]);
         return $resp;
     }
@@ -108,6 +111,7 @@ trait Processable
     private function extractDataFrom($response)
     {
         Log::info(' 3️⃣Extract data from the response');
+        $this->processingMessages[] = ['✅'=>'Extracting data from the response'];
         if (!$response) {
             session()->flash('reply-generated', 'Error, try again.');
             return;
@@ -117,7 +121,8 @@ trait Processable
         //dd($decoded);
         $category = $decoded['category'];
         $action = $decoded['action'];
-        $instructions = $decoded['instructions'];
+        $instructions = $decoded['instructions'] ?? '';
+        $this->processingMessages[] = ['✅'=>'Data extracted successfully'];
         Log::info('✅Extraction completed', ['data' => ['category' => $category, 'action' => $action, 'instructions' => $instructions]]);
         return [$category, $action, $instructions];
     }
@@ -146,10 +151,11 @@ trait Processable
          */
 
         $this->categorizeMessage($messageId, $category, $settings);
-
+       $this->processingMessages[] = ["✅"=>"Message Categorized: $category"];
         // Generate a reply for the given message
 
         $this->generateReply($messageId, $instructions);
+       $this->processingMessages[] = ["✅"=>"Reply generated"];
 
         // Add a calendar entry if required
         //dd($this->reply[$messageId]);
@@ -162,12 +168,16 @@ trait Processable
 
             // check calendar availability
             $is_available = $this->checkCalendarAvailability($startDateTime, $endDateTime);
+           $this->processingMessages[] = ["✅"=>"Checking calendar availability"];
 
             //dd($is_available);
             // schedule the appointment if available or propose a different date/time
             if ($is_available) {
                 $this->updateCalendar($messageId, $this->reply[$messageId]);
             }
+
+            $this->processingMessages[] = ["✅"=>"Calendar Event added"];
+
         }
     }
 
@@ -182,32 +192,45 @@ trait Processable
      */
     public function categorizeMessage($id, $category, $settings)
     {
+        $this->processingMessages[] = ["✅"=>"Categorising message"];
+        if( strtolower($category) === 'inbox') return;
+        // get the mailbox settings from the parameters or use the default settings
         $username = $settings['username'] ?? config('responder.imap.username');
         $password = $settings['password'] ?? config('responder.imap.password');
         $host = $settings['host'] ?? config('responder.imap.server');
         $port = $settings['port'] ?? '993';
 
-        if ($category !== 'inbox') {
-            # code...
-            $mailbox = new Mailbox(
-                '{' . $host . ':' . $port . '/imap/ssl}' . Str::upper($category), // IMAP server and mailbox folder
-                $username, // Username for the before configured mailbox
-                $password, // Password for the before configured username
-                storage_path('app'), // Directory, where attachments will be saved (optional)
-                'UTF-8', // Server encoding (optional)
-                true, // Trim leading/ending whitespaces of IMAP path (optional)
-                true // Attachment filename mode (optional; false = random filename; true = original filename)
-            );
+        // connect to the IMAP server and open a connection
+        $mailbox = new Mailbox(
+            '{' . $host . ':' . $port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
+            $username, // Username for the before configured mailbox
+            $password, // Password for the before configured username
+            storage_path('app'), // Directory, where attachments will be saved (optional)
+            'UTF-8', // Server encoding (optional)
+            true, // Trim leading/ending whitespaces of IMAP path (optional)
+            true // Attachment filename mode (optional; false = random filename; true = original filename)
+        );
 
-            //$mail = $mailbox->getMail($id);
+        // get all mailboxes from the IMAP server and filter the mailboxes by category
+        $mailBoxes = $mailbox->getMailboxes();
+        //dd($mailBoxes);
 
-            //dd($id, $category, $mailbox);
-            $mailbox->moveMail($id, $category);
+
+        $mailboxCategory = [...array_filter($mailBoxes, function ($mailCategory) use ($category) {
+            return $mailCategory['shortpath'] === 'INBOX.' . ucfirst($category);
+        })];
+
+        if(empty($mailboxCategory) || count($mailboxCategory) == 0) {
+            throw new \Exception("The provided category is not a vailad mailbox folder", 1);
         }
-        //dd('TODO: Move the message in a dedicated folder on the IMAP server', $id, $category);
 
-        // TODO:
+        $mailboxFolder = $mailboxCategory[0]['shortpath'];
+
+        //dd([...$mailboxCategory]);
+        $mailbox->moveMail($id, $mailboxFolder);
+        $this->processingMessages[] = ["✅"=>'The message with id:'. $id.'to category: '. $category . 'was moved'];
         Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
+
     }
 
 
@@ -228,6 +251,7 @@ trait Processable
         // Use the payload to generate a response
         $this->reply[$messageId] = $this->getResponse($payload); // Get the response
         // inform the user that the generation was completed
+        $this->processingMessages[] = ["✅"=>'The reply was generated successfully'];
         session()->flash('reply-generated', 'Reply Generated successfully');
         Log::info('✅Reply generated', ['reply' => $this->reply[$messageId]]);
 

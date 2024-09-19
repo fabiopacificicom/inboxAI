@@ -1,5 +1,5 @@
 <div id="inbox-table" class="min-h-screen">
-    {{-- Messages table --}}
+
     @if ($fetching)
         <div class="flex justify-center items-center h-full">
             <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-12 w-12"></div>
@@ -12,7 +12,7 @@
                     {{ session('message') }}
                 </div>
             @endif
-
+            {{-- Messages table --}}
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr>
@@ -38,8 +38,8 @@
                 <tbody>
                     {{-- @dd($messages) --}}
                     @forelse ($messages as $index => $message)
-                    {{-- @dd($message) --}}
-                        <tr wire:key="{{$message['message_identifier']}}">
+                        {{-- @dd($message) --}}
+                        <tr wire:key="{{ $message['message_identifier'] }}">
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
                             </td>
@@ -94,25 +94,34 @@
                                                 In progress
                                             </span>
                                         </button>
+                                        {{-- /Process message button --}}
+
                                         <button popovertarget="message-popover-{{ $index }}"
                                             popovertargetaction="hide"
                                             class="px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline">
                                             Close
                                         </button>
+
                                     </header>
                                     {{-- /.modal-header --}}
 
-                                    @if (array_key_exists($message['message_identifier'], $reply))
-                                        @livewire(
-                                            'ai-reply.reply-form-component',
-                                            [
-                                                'reply' => $reply[$message['message_identifier']],
-                                                'message' => $message,
-                                            ],
-                                            key($message['message_identifier'])
-                                        )
-                                    @endif
-                                    {{-- /Livewire ai-reply.reply-form-component --}}
+
+                                    <div wire:key="message-{{ $index }}" class="mt-4">
+                                        @if (array_key_exists($message['message_identifier'], $reply))
+                                            @livewire(
+                                                'ai-reply.reply-form-component',
+                                                [
+                                                    'reply' => $reply[$message['message_identifier']],
+                                                    'message' => $message,
+                                                ],
+                                                key($message['message_identifier'])
+                                            )
+                                        @endif
+                                        {{-- /Livewire ai-reply.reply-form-component --}}
+
+                                        @include('partials.processing-messages')
+
+                                    </div>
 
                                     <div class="metadata py-4">
                                         <p class="text-gray-900 leading-none">
@@ -129,7 +138,8 @@
                                         <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
                                             <!-- Blade Template -->
                                             @php
-                                                $message_identifier = 'emailIframe-' . md5($message['message_identifier']);
+                                                $message_identifier =
+                                                    'emailIframe-' . md5($message['message_identifier']);
                                             @endphp
                                             <div class="overflow-y-auto h-32" id="wrapper-{{ $message_identifier }}">
                                                 {{ $message['content'] }}

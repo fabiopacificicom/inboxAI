@@ -16,6 +16,7 @@ class MessageListComponent extends Component
 
     use WithPagination, Calendarable, Processable;
 
+
     public $settings;
     public function mount($settings)
     {
@@ -95,6 +96,8 @@ class MessageListComponent extends Component
      */
     public function processMessage($messageId): void
     {
+        // sets the processing messages to an empty array
+        $this->processingMessages = [];
 
         // 1. set the message for processing
         $message = $this->setMessage($messageId);
