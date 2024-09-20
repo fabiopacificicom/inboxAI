@@ -93,12 +93,12 @@ trait Processable
         //dd($resp);
         $content = json_decode($resp['message']['content'], true);
         if (!$content || !array_key_exists('category', $content) && !array_key_exists('action', $content) && !array_key_exists('instructions', $content)) {
-            $this->processingMessages[] = [ '❌' => 'Classification failed, try again later.'];
+            $this->processingMessages[] = ['❌' => 'Classification failed, try again later.'];
             Log::error('❌CLASSIFICATION - The AI model generated an incorrect response, see the response below.', $resp);
 
             return false;
         }
-        $this->processingMessages[] = ['✅'=>'Message classified successfully'];
+        $this->processingMessages[] = ['✅' => 'Message classified successfully'];
         Log::info('✅CLASSIFICATION COMPLETE.', ['classification_response' => $resp]);
         return $resp;
     }
@@ -111,7 +111,7 @@ trait Processable
     private function extractDataFrom($response)
     {
         Log::info(' 3️⃣Extract data from the response');
-        $this->processingMessages[] = ['✅'=>'Extracting data from the response'];
+        $this->processingMessages[] = ['✅' => 'Extracting data from the response'];
         if (!$response) {
             session()->flash('reply-generated', 'Error, try again.');
             return;
@@ -122,7 +122,7 @@ trait Processable
         $category = $decoded['category'];
         $action = $decoded['action'];
         $instructions = $decoded['instructions'] ?? '';
-        $this->processingMessages[] = ['✅'=>'Data extracted successfully'];
+        $this->processingMessages[] = ['✅' => 'Data extracted successfully'];
         Log::info('✅Extraction completed', ['data' => ['category' => $category, 'action' => $action, 'instructions' => $instructions]]);
         return [$category, $action, $instructions];
     }
@@ -151,16 +151,27 @@ trait Processable
          */
 
         $this->categorizeMessage($messageId, $category, $settings);
-       $this->processingMessages[] = ["✅"=>"Message Categorized: $category"];
+        $this->processingMessages[] = ["✅" => "Message Categorized: $category"];
         // Generate a reply for the given message
 
         $this->generateReply($messageId, $instructions);
-       $this->processingMessages[] = ["✅"=>"Reply generated"];
+        $this->processingMessages[] = ["✅" => "Reply generated"];
 
         // Add a calendar entry if required
-        //dd($this->reply[$messageId]);
+        Log::info('👉Reply', ['reply' => $this->reply[$messageId]]);
 
-        if ($instructions == 'insertEvent' ||  array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) && json_decode($this->reply[$messageId]['message']['content'], true)['event'] === true) {
+        /* dd(
+            array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)),
+            json_decode($this->reply[$messageId]['message']['content'], true)['event'] == true,
+            ($instructions == 'insertEvent' || is_array($instructions) && in_array('insertEvent', $instructions))
+        ); */
+
+        if (
+            array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) &&
+            json_decode($this->reply[$messageId]['message']['content'], true)['event'] == true &&
+            ($instructions == 'insertEvent' || is_array($instructions) && in_array('insertEvent', $instructions))
+
+        ) {
 
             // get the requested datees fro mteh reply
             $startDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['start']['dateTime']);
@@ -168,7 +179,7 @@ trait Processable
 
             // check calendar availability
             $is_available = $this->checkCalendarAvailability($startDateTime, $endDateTime);
-           $this->processingMessages[] = ["✅"=>"Checking calendar availability"];
+            $this->processingMessages[] = ["✅" => "Checking calendar availability"];
 
             //dd($is_available);
             // schedule the appointment if available or propose a different date/time
@@ -176,8 +187,7 @@ trait Processable
                 $this->updateCalendar($messageId, $this->reply[$messageId]);
             }
 
-            $this->processingMessages[] = ["✅"=>"Calendar Event added"];
-
+            $this->processingMessages[] = ["✅" => "Calendar Event added"];
         }
     }
 
@@ -192,8 +202,8 @@ trait Processable
      */
     public function categorizeMessage($id, $category, $settings)
     {
-        $this->processingMessages[] = ["✅"=>"Categorising message"];
-        if( strtolower($category) === 'inbox') return;
+        $this->processingMessages[] = ["✅" => "Categorising message"];
+        if (strtolower($category) === 'inbox') return;
         // get the mailbox settings from the parameters or use the default settings
         $username = $settings['username'] ?? config('responder.imap.username');
         $password = $settings['password'] ?? config('responder.imap.password');
@@ -220,7 +230,7 @@ trait Processable
             return $mailCategory['shortpath'] === 'INBOX.' . ucfirst($category);
         })];
 
-        if(empty($mailboxCategory) || count($mailboxCategory) == 0) {
+        if (empty($mailboxCategory) || count($mailboxCategory) == 0) {
             throw new \Exception("The provided category is not a vailad mailbox folder", 1);
         }
 
@@ -228,9 +238,8 @@ trait Processable
 
         //dd([...$mailboxCategory]);
         $mailbox->moveMail($id, $mailboxFolder);
-        $this->processingMessages[] = ["✅"=>'The message with id:'. $id.'to category: '. $category . 'was moved'];
+        $this->processingMessages[] = ["✅" => 'The message with id:' . $id . 'to category: ' . $category . 'was moved'];
         Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
-
     }
 
 
@@ -251,7 +260,7 @@ trait Processable
         // Use the payload to generate a response
         $this->reply[$messageId] = $this->getResponse($payload); // Get the response
         // inform the user that the generation was completed
-        $this->processingMessages[] = ["✅"=>'The reply was generated successfully'];
+        $this->processingMessages[] = ["✅" => 'The reply was generated successfully'];
         session()->flash('reply-generated', 'Reply Generated successfully');
         Log::info('✅Reply generated', ['reply' => $this->reply[$messageId]]);
 
