@@ -51,7 +51,7 @@ trait Calendarable {
         //https://packagist.org/packages/spatie/laravel-google-calendar
 
         $event = new Event();
-        $event->name = $replyContent['event']['summary'];
+        $event->name = $replyContent['event']['summary'] ?? '';
         $event->description = $replyContent['event']['description'] ?? '';
         $event->startDateTime = Carbon::parse($replyContent['event']['start']['dateTime']);
         $event->endDateTime = Carbon::parse($replyContent['event']['end']['dateTime']);
