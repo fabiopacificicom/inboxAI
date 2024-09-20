@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->string('message_identifier')->unique()->index()->nullable();
+            $table->string('message_identifier');
             $table->boolean('is_seen')->default(0);
             $table->boolean('is_answered')->default(0);
             $table->boolean('is_recent')->default(0);
