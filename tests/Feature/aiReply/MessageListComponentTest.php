@@ -25,7 +25,7 @@ describe('🔥 Smoke test', function () {
         Livewire::test(MessageListComponent::class, ['settings' => []])
             ->assertViewIs('livewire.ai-reply.message-list-component');
     });
-});
+})->group('messages');
 
 
 describe('📨 Message Processing Unit', function () {
@@ -62,4 +62,4 @@ describe('📨 Message Processing Unit', function () {
         expect(fn() => $anonymous->categorizeMessage($id, $category, $settings))->toThrow('Exception', 'The provided category is not a vailad mailbox folder');
     });
 
-});
+})->group('messages');
