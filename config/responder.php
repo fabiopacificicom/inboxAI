@@ -2,9 +2,10 @@
 return [
 
     'imap' => [
-        'username' => env('MAIL_FROM_ADDRESS'),
-        'password' => env('INBOX_AI_MAIL_PASSWORD'),
-        'server' => env('INBOX_AI_MAIL_SERVER')
+        'username' => env('MAIL_FROM_ADDRESS', null),
+        'password' => env('INBOX_AI_MAIL_PASSWORD', null),
+        'server' => env('INBOX_AI_MAIL_SERVER', null),
+        'port' => env('INBOX_AI_MAIL_PORT', 993),
     ],
 
     'classifier' => [

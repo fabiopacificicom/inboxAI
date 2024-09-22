@@ -4,11 +4,11 @@
     @if (session('reply-generated'))
         <div class="text-gray-700">{{ session('reply-generated') }}</span>
     @endif
-    @if (session()->has('message'))
+{{--     @if (session()->has('message'))
         <div class="alert bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
             {{ session('message') }}
         </div>
-    @endif
+    @endif --}}
     {{-- Reply form --}}
     @if (array_key_exists('message', $reply) && array_key_exists('content', $reply['message']))
         <form wire:submit.prevent="sendReply">

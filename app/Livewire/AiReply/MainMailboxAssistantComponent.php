@@ -43,19 +43,6 @@ class MainMailboxAssistantComponent extends Component
         return view('livewire.ai-reply.main-mailbox-assistant-component');
     }
 
-    /* public function getModels()
-    {
-        try {
-            //code...
-            $response = Http::get(config('responder.assistant.tags'));
-            return $response->json();
-        } catch (\Throwable $th) {
-            //throw $th;
-            session()->flash('message', $th->getMessage());
-            Log::error($th->getMessage());
-        }
-    }
- */
 
 
 }

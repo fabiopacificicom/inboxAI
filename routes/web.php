@@ -6,13 +6,15 @@ use Illuminate\Support\Facades\Route;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Mailbox;
 use Illuminate\Support\Carbon;
-
+use App\Traits\HasMailboxConnection;
+use Illuminate\Support\Facades\Cache;
 Route::get('/', function () {
     return redirect('/dashboard');
     //view('welcome');
 });
 
 Route::get('/dashboard', function () {
+
 
 
     $settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {

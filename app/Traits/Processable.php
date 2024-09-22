@@ -7,13 +7,12 @@ use App\Models\Setting;
 use App\Traits\HandleAiResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
-use PhpImap\Mailbox;
 use Illuminate\Support\Str;
 use PhpImap\Imap;
-
+use App\Traits\HasMailboxConnection;
 trait Processable
 {
-    use HandleAiResponse;
+    use HandleAiResponse, HasMailboxConnection;
     public $message;
     public $messages;
     public $reply = [];
@@ -128,6 +127,39 @@ trait Processable
     }
 
 
+
+    /**
+     * TODO:
+     * Move a message to a category on the IMAP server
+     * @param $message the message to be moved
+     * @param $category the category to move it into
+     * @return void
+     */
+    public function categorizeMessage($id, $category, $settings)
+    {
+        $this->processingMessages[] = ["✅" => "Categorising message"];
+        if (strtolower($category) === 'inbox') return;
+
+
+        // connect the mailbox
+        $mailbox = $this->makeMailboxFrom($settings);
+
+        // get all mailboxes from the IMAP server and filter the mailboxes by category
+        $mailBoxes = $mailbox->getMailboxes();
+        //dd($mailBoxes);
+
+        // get the first mailbox that matches the category
+        $mailboxPath = $this->findMailboxMatching($mailBoxes, $category);
+
+        //dd([...$mailboxCategory]);
+        $mailbox->moveMail($id, $mailboxPath);
+        $this->processingMessages[] = ["✅" => 'The message with id:' . $id . 'to category: ' . $category . 'was moved'];
+        Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
+    }
+
+
+
+
     /**
      * Perform the actions based on the extracted data
      * @param $action
@@ -193,54 +225,6 @@ trait Processable
 
 
 
-    /**
-     * TODO:
-     * Move a message to a category on the IMAP server
-     * @param $message the message to be moved
-     * @param $category the category to move it into
-     * @return void
-     */
-    public function categorizeMessage($id, $category, $settings)
-    {
-        $this->processingMessages[] = ["✅" => "Categorising message"];
-        if (strtolower($category) === 'inbox') return;
-        // get the mailbox settings from the parameters or use the default settings
-        $username = $settings['username'] ?? config('responder.imap.username');
-        $password = $settings['password'] ?? config('responder.imap.password');
-        $host = $settings['host'] ?? config('responder.imap.server');
-        $port = $settings['port'] ?? '993';
-
-        // connect to the IMAP server and open a connection
-        $mailbox = new Mailbox(
-            '{' . $host . ':' . $port . '/imap/ssl}INBOX', // IMAP server and mailbox folder
-            $username, // Username for the before configured mailbox
-            $password, // Password for the before configured username
-            storage_path('app'), // Directory, where attachments will be saved (optional)
-            'UTF-8', // Server encoding (optional)
-            true, // Trim leading/ending whitespaces of IMAP path (optional)
-            true // Attachment filename mode (optional; false = random filename; true = original filename)
-        );
-
-        // get all mailboxes from the IMAP server and filter the mailboxes by category
-        $mailBoxes = $mailbox->getMailboxes();
-        //dd($mailBoxes);
-
-
-        $mailboxCategory = [...array_filter($mailBoxes, function ($mailCategory) use ($category) {
-            return $mailCategory['shortpath'] === 'INBOX.' . ucfirst($category);
-        })];
-
-        if (empty($mailboxCategory) || count($mailboxCategory) == 0) {
-            throw new \Exception("The provided category is not a vailad mailbox folder", 1);
-        }
-
-        $mailboxFolder = $mailboxCategory[0]['shortpath'];
-
-        //dd([...$mailboxCategory]);
-        $mailbox->moveMail($id, $mailboxFolder);
-        $this->processingMessages[] = ["✅" => 'The message with id:' . $id . 'to category: ' . $category . 'was moved'];
-        Log::info('Move the message with id:', ['id' => $id, 'category' => $category]);
-    }
 
 
     /**
@@ -268,7 +252,6 @@ trait Processable
 
 
     }
-
 
 
     /**

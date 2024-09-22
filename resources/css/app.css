@@ -21,8 +21,8 @@
     max-width: 900px;
     margin: auto;
     padding: 1rem;
-    background-color: white;
-    border: 1px solid gray;
+    background-color: light-dark(white, black);
+    border: 1px solid light-dark(gray, #333333);
     border-radius: 1rem;
 }
 
@@ -40,6 +40,7 @@ dialog#settings {
     border-radius: 0.5rem;
     overflow-y: auto;
     max-height: 90dvh;
+
     @media (max-width: 420px) {
         max-height: 100dvh;
     }
@@ -47,18 +48,25 @@ dialog#settings {
 
 
     /* Change the default scrollbar size and color to a tiny one light gray */
-    &::-webkit-scrollbar, & textarea::-webkit-scrollbar {
+    &::-webkit-scrollbar,
+    & textarea::-webkit-scrollbar {
         width: 5px;
     }
-    &::-webkit-scrollbar-track, & textarea::-webkit-scrollbar-track {
+
+    &::-webkit-scrollbar-track,
+    & textarea::-webkit-scrollbar-track {
         background-color: #cecece;
         border-radius: 5px;
     }
-    &::-webkit-scrollbar-thumb, & textarea::-webkit-scrollbar-thumb {
+
+    &::-webkit-scrollbar-thumb,
+    & textarea::-webkit-scrollbar-thumb {
         background-color: #444444;
         border-radius: 5px;
     }
-    &::-webkit-scrollbar-thumb:hover, & textarea::-webkit-scrollbar-thumb:hover {
+
+    &::-webkit-scrollbar-thumb:hover,
+    & textarea::-webkit-scrollbar-thumb:hover {
         background-color: #333333;
     }
 

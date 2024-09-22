@@ -17,10 +17,16 @@ class MessageListComponent extends Component
     use WithPagination, Calendarable, Processable;
 
 
+
     public $settings;
     public function mount($settings)
     {
 
+
+        $mailbox = $this->makeMailboxFrom();
+        $this->mailboxes = Cache::rememberForever('mailboxes', function () use ($mailbox) {
+            return $mailbox->getMailboxes();
+        });
         // clean up older messages from the cache and db
         //$this->removeOlderMessages();
         // Retrieve the latest N messages from the database, where N is the maximum allowed limit
@@ -29,50 +35,56 @@ class MessageListComponent extends Component
         $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
     }
 
-
-    private function retreiveLatestMessages(){
-        $limit = $this->settings['limit'] ?? 20;
-        $messages = Message::orderByDesc('date')->take($limit)->get();
-        //dd($messages);
-        // Update the cache with the retrieved and limited messages
-        Cache::forever('messages', $messages);
-
-        return $messages;
-
-    }
-
-    private function removeOlderMessages()
-    {
-        // get the period of messages to be displayed from the settings table
-        $period = Setting::where('key', 'filter')->first()->value;
-        //dd($period);
-
-
-        // Define a mapping of intervals to their corresponding number of days
-        $intervalMap = [
-            'day' => 1,
-            'week' => 7,
-            'month' => 30, // assuming 30 days in a month for simplicity
-        ];
-
-        // Calculate the timestamp for the period (e.g. today minus the specified interval)
-        $timestamp = now()->subDays($intervalMap[$period]);
-        //dd($timestamp, $limit, $period, $intervalMap[$period]);
-
-        // Delete any messages that are older than the calculated timestamp
-        Message::where('date', '<=', $timestamp)->delete();
-        // Clean the cached messages
-        Cache::forget('messages');
-        //dd(Message::all());
-    }
-
-
-
     public function render()
     {
         return view('livewire.ai-reply.message-list-component');
     }
 
+
+
+    public function switchMailboxFolder($mailboxFolder){
+        //dd($mailboxFolder);
+
+        $this->selectedMailbox = $mailboxFolder['shortpath'];
+        $mailbox = $this->makeMailboxFrom();
+        $mailbox->switchMailbox($mailboxFolder['fullpath']);
+        //dd($mailbox);
+        $ids = $mailbox->searchMailbox('ALL');
+        //dd($mailbox, $ids);
+        $this->fetchEmailMessages($mailbox, $ids);
+        $this->messages = Cache::get('messages');
+        //dd($mailbox, $this->messages);
+    }
+
+
+    public function deleteMessages($forever = false)
+    {
+        // Get all message_identifiers
+        $ids = Message::pluck('message_identifier');
+        //dd($ids);
+
+        // delete all messages with the ids matching from the database
+        Message::whereIn('message_identifier', $ids)->delete();
+
+        // clear the messages from the imap server
+        $forever ? $this->deleteImapMessagesByMessageIds($ids) : $this->trashImapMessagesByMessageIds($ids);
+        Cache::flush();
+
+        // empty the messages array
+        $this->messages = [];
+
+        session()->flash('message', 'All Messages Deleted!');
+
+        return redirect()->back()->with('message', 'All Messages Deleted!');
+    }
+
+    public function cleanTrash()
+    {
+        //dd('cleaning the trash mailbox folder');
+        $this->emptyMailbox('IMAP.Trash');
+        //dd('cleaned');
+        Cache::flush();
+    }
 
     #[On('mailbox-sync-event')]
     /**
@@ -113,5 +125,41 @@ class MessageListComponent extends Component
 
         // 4. Perform the actions on the message based on the action
         $this->performActions($action, $instructions, $messageId, $category, $settings = $this->settings);
+    }
+
+    private function retreiveLatestMessages()
+    {
+        $limit = $this->settings['limit'] ?? 20;
+        $messages = Message::orderByDesc('date')->take($limit)->get();
+        //dd($messages);
+        // Update the cache with the retrieved and limited messages
+        Cache::forever('messages', $messages);
+
+        return $messages;
+    }
+
+    private function removeOlderMessages()
+    {
+        // get the period of messages to be displayed from the settings table
+        $period = Setting::where('key', 'filter')->first()->value;
+        //dd($period);
+
+
+        // Define a mapping of intervals to their corresponding number of days
+        $intervalMap = [
+            'day' => 1,
+            'week' => 7,
+            'month' => 30, // assuming 30 days in a month for simplicity
+        ];
+
+        // Calculate the timestamp for the period (e.g. today minus the specified interval)
+        $timestamp = now()->subDays($intervalMap[$period]);
+        //dd($timestamp, $limit, $period, $intervalMap[$period]);
+
+        // Delete any messages that are older than the calculated timestamp
+        Message::where('date', '<=', $timestamp)->delete();
+        // Clean the cached messages
+        Cache::forget('messages');
+        //dd(Message::all());
     }
 }
