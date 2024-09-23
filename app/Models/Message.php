@@ -22,7 +22,8 @@ class Message extends Model
         'is_recent',
         'is_flagged',
         'is_deleted',
-        'is_draft'
+        'is_draft',
+        'mailbox_folder'
     ];
 
 

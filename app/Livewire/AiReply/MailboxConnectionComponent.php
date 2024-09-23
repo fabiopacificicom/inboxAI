@@ -88,10 +88,5 @@ class MailboxConnectionComponent extends Component
 
         Setting::updateOrCreate(['key' => $name], ['value' => $value]);
 
-
-        if ($name === 'filter') {
-            $this->fetching = true;
-            $this->connectMailbox();
-        }
     }
 }

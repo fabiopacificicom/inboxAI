@@ -49,8 +49,6 @@ trait Processable
         return $this->message;
     }
 
-
-
     /**
      * Classify the given message
      * This method uses the selected classifier to determine which category
@@ -61,6 +59,7 @@ trait Processable
      */
     private function classify($message)
     {
+
         //dd($message);
         // set the classifier payload
         $payload = [

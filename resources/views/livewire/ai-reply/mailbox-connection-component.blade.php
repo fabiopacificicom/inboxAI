@@ -54,7 +54,8 @@
         <h3 class="text-2xl text-gray-500">Mailbox settings (imap) </h3>
         <p class="mb-3">Here you can configure your imap mailbox settings.</p>
         <div class="mb-3">
-            <form id="connection" wire:submit.prevent="connectMailbox" class="md:grid md:grid-cols-3 md:gap-4 gap-2 mb-3">
+            <form id="connection" wire:submit.prevent="connectMailbox"
+                class="md:grid md:grid-cols-3 md:gap-4 gap-2 mb-3">
 
                 <div>
                     <label for="host" class="block text-sm font-medium text-gray-700">Host:</label>
@@ -100,27 +101,6 @@
                 </div>
 
 
-                {{-- Limit results --}}
-                <div id="limit">
-                    <label for="limit" class="block text-sm font-medium text-gray-700">Limit results to:</label>
-                    <input type="number" name="limit" id="limit" wire:model.blur="limit"
-                        class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
-                </div>
-
-                {{-- Filter email fetch backdating --}}
-                <div class="filter">
-                    <label for="period">Period:</label>
-                    <select id="period" wire:model.live="filter"
-                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
-                        <option value="day">Day</option>
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                    </select>
-                </div>
-
-                <div>
-
-                </div>
             </form>
             <button form="connection" wire:target="connectMailbox" wire:loading.attr="disabled"
                 wire:loading.class="bg-gray-600"

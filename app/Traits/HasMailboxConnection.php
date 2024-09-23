@@ -209,16 +209,18 @@ trait HasMailboxConnection
         // Loop through emails one by one
         Cache::forget('messages');
 
-        Cache::remember('messages', now()->addHour(), function () use ($mailsIds, $mailbox) {
+        Cache::remember('messages', now()->addDay(), function () use ($mailsIds, $mailbox) {
             //dd($mailsIds);
             return array_map(function ($num) use ($mailbox) {
-                //dd($mailbox);
-                // this fetches only the header
+
+                // TODO: Performance improvements:
+                // Update the implementation and start by just fetching the message headers
+                // and then fetch the body when user clicks on the message.
                 //$head = $mailbox->getMailHeader($num);
-                //dd($head);
+                //dd($head->mailboxFolder);
                 $markAsSeen = true;
                 $mail = $mailbox->getMail($num, $markAsSeen);
-                //dd($num, $mail);
+                //dd($num, $mail->mailboxFolder);
 
                 $message = [
                     'message_identifier' => $mail->id,
@@ -233,7 +235,8 @@ trait HasMailboxConnection
                     'sender' => isset($mail->fromName) ? $mail->fromName : '',
                     'reply_to_addresses' => array_keys($mail->replyTo),
                     'date' => $this->normalizeDate($mail->date),
-                    'content' => str_replace(["\t", "\r", "\n"], "", $mail->textPlain)
+                    'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),
+                    'mailbox_folder' => $mail->mailboxFolder
                     // Add more fields as needed
                 ];
                 //dd($message);
@@ -253,7 +256,8 @@ trait HasMailboxConnection
                     'is_recent' => $message['is_recent'],
                     'is_flagged' => $message['is_flagged'],
                     'is_deleted' => $message['is_deleted'],
-                    'is_draft' => $message['is_draft']
+                    'is_draft' => $message['is_draft'],
+                    'mailbox_folder' => $message['mailbox_folder']
 
                 ]);
                 //dd($messageObject);

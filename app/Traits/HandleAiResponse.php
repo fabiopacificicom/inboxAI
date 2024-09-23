@@ -10,8 +10,10 @@ trait HandleAiResponse {
      * Get the ollama response for the given payload
      * @returns array the http response as an array
      */
-    private function getResponse($payload): array
+    private function getResponse($payload, $tools = []): array
     {
+
+        //dd($payload);
 
         $response = Http::timeout(5000)
             ->post(Setting::where('key', 'ollamaServerAddress')
