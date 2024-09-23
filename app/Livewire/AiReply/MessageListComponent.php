@@ -10,37 +10,39 @@ use Livewire\WithPagination;
 use App\Traits\Calendarable;
 use App\Traits\Processable;
 use App\Models\Setting;
-
+use Illuminate\Support\Facades\Log;
 class MessageListComponent extends Component
 {
 
     use WithPagination, Calendarable, Processable;
 
 
-
+    public $messages;
     public $settings;
+
+    /**
+     * @params $settings - array of settings
+     */
     public function mount($settings)
     {
-
 
         $mailbox = $this->makeMailboxFrom();
         $this->mailboxes = Cache::rememberForever('mailboxes', function () use ($mailbox) {
             return $mailbox->getMailboxes();
         });
-        // clean up older messages from the cache and db
-        //$this->removeOlderMessages();
-        // Retrieve the latest N messages from the database, where N is the maximum allowed limit
+
+        ///$this->removeOlderMessages();
+
         $this->settings = $settings;
         //dd(Cache::get('messages'));
-        $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
+        $this->messages = Cache::get('messages') ?? $this->retreiveLatestMessages();
+        Log::info('MessageListComponent Mounted', [$this->messages]);
     }
 
     public function render()
     {
         return view('livewire.ai-reply.message-list-component');
     }
-
-
 
     public function switchMailboxFolder($mailboxFolder){
         //dd($mailboxFolder);
@@ -57,8 +59,13 @@ class MessageListComponent extends Component
     }
 
 
+    /* TODO: review the method logic, you need to trash or delete
+     * only messages from the currently selected mailbox.
+     * and not all messages downloaded in the db for the current session
+     */
     public function deleteMessages($forever = false)
     {
+
         // Get all message_identifiers
         $ids = Message::pluck('message_identifier');
         //dd($ids);
@@ -127,6 +134,9 @@ class MessageListComponent extends Component
         $this->performActions($action, $instructions, $messageId, $category, $settings = $this->settings);
     }
 
+    /**
+     * Retreive the latest messages from the db
+     */
     private function retreiveLatestMessages()
     {
         $limit = $this->settings['limit'] ?? 20;
@@ -138,6 +148,9 @@ class MessageListComponent extends Component
         return $messages;
     }
 
+    /**
+     * Remove old messages from the cache and the db
+     */
     private function removeOlderMessages()
     {
         // get the period of messages to be displayed from the settings table

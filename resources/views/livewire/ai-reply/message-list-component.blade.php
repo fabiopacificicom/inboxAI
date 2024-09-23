@@ -5,11 +5,11 @@
             @if (!empty($mailboxes))
                 @foreach ($mailboxes as $index => $box)
                     {{-- @dd($box) --}}
-                    <li wire:key="folder-{{ $index }}" class="hover:bg-gray-200"
+                    <li wire:key="folder-{{ $index }}" class="hover:border-b-2 hover:border-gray-700"
                         wire:click="switchMailboxFolder({{json_encode($box)}})">
 
                         <button type="button"
-                            class="rounded-md p-2 {{ $selectedMailbox == $box['shortpath'] ? 'bg-gray-200' : '' }}">
+                            class="w-full text-start rounded-md p-2 {{ $selectedMailbox == $box['shortpath'] ? 'bg-gray-800 text-white' : '' }}">
                             {{ preg_replace('/^INBOX\.(.*)$/', '$1', $box['shortpath']) }}
                         </button>
                     </li>
@@ -26,7 +26,7 @@
         <button type="button" wire:click="cleanTrash()" class="bg-gray-100 hover:bg-gray-300 p-2 rounded-lg m-1">🗑️
             Clean
             Trash</button>
-        <button type="button" wire:click="deleteMessages(true)"
+        <button type="button"  wire:click="deleteMessages(true)" wire:confirm="Are you sure? This will delete all messages below from the imap server - this is not reversible."
             class="bg-gray-100 hover:bg-gray-300 p-2 rounded-lg m-1">❌ Delete All</button>
 
         @if ($fetching)
