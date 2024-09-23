@@ -207,8 +207,8 @@ trait HasMailboxConnection
 
         //dd($mailsIds);
         // Loop through emails one by one
-
         Cache::forget('messages');
+
         Cache::remember('messages', now()->addHour(), function () use ($mailsIds, $mailbox) {
             //dd($mailsIds);
             return array_map(function ($num) use ($mailbox) {
@@ -240,7 +240,7 @@ trait HasMailboxConnection
 
                 //dd($message['message_identifier'], $message);
 
-                $messageObject = Message::updateOrCreate(['message_identifier' => $mail->messageId], [
+                $messageObject = Message::updateOrCreate(['message_identifier' => $mail->id], [
                     'message_identifier' => $message['message_identifier'],
                     'subject' => $message['subject'],
                     'from' =>  $message['from'],
