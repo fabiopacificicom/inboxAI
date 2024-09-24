@@ -73,9 +73,11 @@ trait HasMailboxConnection
      * @param Collection $messageIds the message ids that should be trashed
      * @return void
      */
+
     public function trashImapMessagesByMessageIds(Collection $messageIds)
     {
         // make the mailbox connection
+
         //dd($this->selectedMailbox, $messageIds);
         $mailbox = $this->makeMailboxFrom([], $this->selectedMailbox);
         Log::info('trashImapMessagesByMessageIds', [$messageIds]);
@@ -84,12 +86,15 @@ trait HasMailboxConnection
             $mailbox->moveMail(intval($id), 'INBOX.Trash');
         }
     }
+
+
     /**
      * deleteImapMessagesByMessageIds
      * deletes the given messages from the IMAP server
      * @param Collection $messageIds the message ids that should be trashed
      * @return void
      */
+
     public function deleteImapMessagesByMessageIds(Collection $messageIds)
     {
         // make the mailbox connection
@@ -101,6 +106,7 @@ trait HasMailboxConnection
         }
         $mailbox->expungeDeletedMails();
     }
+
 
     public function emptyMailbox($folder = 'INBOX.Trash')
     {
@@ -216,10 +222,11 @@ trait HasMailboxConnection
                 // TODO: Performance improvements:
                 // Update the implementation and start by just fetching the message headers
                 // and then fetch the body when user clicks on the message.
-                //$head = $mailbox->getMailHeader($num);
-                //dd($head->mailboxFolder);
-                $markAsSeen = true;
-                $mail = $mailbox->getMail($num, $markAsSeen);
+                $mail = $mailbox->getMailHeader($num);
+                //dd($head->id, $head->subject);
+
+                //$markAsSeen = true;
+                //$mail = $mailbox->getMail($num, $markAsSeen);
                 //dd($num, $mail->mailboxFolder);
 
                 $message = [
@@ -235,7 +242,7 @@ trait HasMailboxConnection
                     'sender' => isset($mail->fromName) ? $mail->fromName : '',
                     'reply_to_addresses' => array_keys($mail->replyTo),
                     'date' => $this->normalizeDate($mail->date),
-                    'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),
+                    /* 'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),*/
                     'mailbox_folder' => $mail->mailboxFolder
                     // Add more fields as needed
                 ];
@@ -250,7 +257,7 @@ trait HasMailboxConnection
                     'sender' => $message['sender'],
                     'reply_to_addresses'  => $message['reply_to_addresses'],
                     'date' => $message['date'],
-                    'content' => $message['content'],
+                    'content' => $message['content'] ?? '',
                     'is_seen' => $message['is_seen'],
                     'is_answered' => $message['is_answered'],
                     'is_recent' => $message['is_recent'],
@@ -296,23 +303,22 @@ trait HasMailboxConnection
 
     private function normalizeDate($dateString)
     {
-        //dd($dateString);
+        // Remove timezone information
+        $dateString = preg_replace('/\s*\(.+\)$/', '', $dateString);
+
         // Define an array of known formats
         $knownFormats = [
             'Y-m-d\TH:i:sP',    // Example: 2024-08-06T13:29:12+00:00
-            // Add more formats as needed
+            'D, d M Y H:i:s O', // Example: Tue, 6 Aug 2024 19:51:35 +0800
             'l, d F Y H:i:s P' // Example: Tue, 6 Aug 2024 19:51:35 +0800
+            // Add more formats as needed
+
         ];
 
         // Attempt to parse the date using known formats
         foreach ($knownFormats as $format) {
 
-            try {
-                //code...
-                $date = Carbon::createFromFormat($format, $dateString);
-            } catch (\Throwable $th) {
-                dd($th->getMessage(), $format, $dateString);
-            }
+            $date = Carbon::createFromFormat($format, $dateString);
 
             if ($date !== false) {
                 return $date;

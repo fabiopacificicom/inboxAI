@@ -11,11 +11,12 @@ use App\Traits\Calendarable;
 use App\Traits\Processable;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
+use App\Traits\Helpers;
 
 class MessageListComponent extends Component
 {
 
-    use WithPagination, Calendarable, Processable;
+    use WithPagination, Calendarable, Processable, Helpers;
 
 
     public $messages;
@@ -78,6 +79,40 @@ class MessageListComponent extends Component
             Setting::updateOrCreate(['key' => $name], ['value' => $value]);
             $this->dispatch('sync-mailbox')->to(MailboxConnectionComponent::class);
         }
+    }
+
+
+    /* TODO:
+        Complete the implementation to fetch the message and retrive its body
+        from the imap and store it back in the db
+    */
+    public function fetchMessage($id)
+    {
+        //dd($id);
+        //$this->loading = true;
+        // get the message from the imap server
+        $imapMailbox = $this->makeMailboxFrom(inbox: $this->selectedMailbox);
+
+        $mail = $imapMailbox->getMail($id);
+        $content = $mail?->textPlain;
+        if (strlen($content)  == 0) {
+            $content = $this->convertHtmlToPlainText($mail?->textHtml);
+        }
+        $this->fetching = false;
+
+        // parse the content and extract the message body as text
+        // if content in an html format, convert it to plain
+
+        //dd($content);
+
+        // find the mesage from the db
+        $message = Message::where('message_identifier', $id)->first();
+        //update it
+        $message->update(['content' => ($content)]);
+
+        // update the messages collection
+        $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
+
     }
 
 
@@ -238,6 +273,5 @@ class MessageListComponent extends Component
         Message::where('date', '<=', $timestamp)->take($this->limit)->delete();
         // Clean the cached messages
         Cache::forget('messages');
-
     }
 }

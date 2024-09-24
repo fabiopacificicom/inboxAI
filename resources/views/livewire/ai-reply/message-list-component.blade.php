@@ -126,8 +126,11 @@
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
 
 
-                                    <button popovertarget="message-popover-{{ $index }}"
-                                        class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-dark-950 focus:outline-none focus:shadow-outline">Open</button>
+                                    <button wire:click="fetchMessage({{ $message['message_identifier'] }})"
+                                        popovertarget="message-popover-{{ $index }}"
+                                        class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-dark-950 focus:outline-none focus:shadow-outline">
+                                        Open
+                                    </button>
                                     <dialog popover id="message-popover-{{ $index }}"
                                         class="max-w-7xl m-auto bg-white p-6 rounded-lg shadow-xl">
 
@@ -172,6 +175,9 @@
                                         </header>
                                         {{-- /.modal-header --}}
 
+                                        @if ($fetching == true)
+                                            <div>LOADING MESSAGE...</div>
+                                        @endif
 
                                         <div wire:key="message-{{ $index }}" class="mt-4">
                                             @if (array_key_exists($message['message_identifier'], $reply))
@@ -200,6 +206,7 @@
                                         </div>
                                         {{-- /.metadata --}}
 
+
                                         <div class="received-message mt-4">
                                             <h3 class="text-lg font-semibold">Original</h3>
                                             <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
@@ -216,6 +223,7 @@
                                             </div>
                                         </div>
                                         {{-- /.received-message --}}
+
 
                                     </dialog>
 
