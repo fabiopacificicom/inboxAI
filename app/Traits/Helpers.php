@@ -10,6 +10,24 @@ use DOMXPath;
 trait Helpers
 {
 
+    /**
+     * Get the content from a given URL
+     * @param string $url
+     * @return string
+     */
+    public function readWebPageFromUrl($url)
+    {
+        // try calling the getWebPageContent method
+        try {
+            $content = $this->getWebPageContent($url);
+        } catch (\Throwable $th) {
+            $content = 'ERROR: The page cannot be found' . $th->getMessage();
+        }
+
+        // return the plain text version of the page
+        return $this->convertHtmlToPlainText($content);
+    }
+
 
     /**
      * Get the web page content given the url
