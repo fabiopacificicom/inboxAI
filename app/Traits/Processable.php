@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpImap\Imap;
 use App\Traits\HasMailboxConnection;
+
 trait Processable
 {
     use HandleAiResponse, HasMailboxConnection;
@@ -134,14 +135,14 @@ trait Processable
      * @param $category the category to move it into
      * @return void
      */
-    public function categorizeMessage($id, $category, $settings)
+    public function categorizeMessage($id, $category)
     {
         $this->processingMessages[] = ["✅" => "Categorising message"];
         if (strtolower($category) === 'inbox') return;
 
 
         // connect the mailbox
-        $mailbox = $this->makeMailboxFrom($settings);
+        $mailbox = $this->makeMailboxFromSettings();
 
         // get all mailboxes from the IMAP server and filter the mailboxes by category
         $mailBoxes = $mailbox->getMailboxes();
@@ -170,43 +171,42 @@ trait Processable
     private function performActions($action, $instructions, $messageId, $category = null, $settings = null)
     {
         if (!$action) {
-            session()->flash('reply-generated', 'No action required.');
-            return;
+            return back()->with('reply-generated', 'No action required.');
         }
         Log::info('4️⃣ performActions', ['instructions' => $instructions, 'action' => $action, 'category' => $category, $messageId => $this->message]);
 
-        /* TODO:
-        - 1. categorize the message. `$this->categorizeMessage($messageId, $category);`
-        - 2. generate a reply `$this->generateReply($messageId, $instructions)`;
-        - 3. add a calendar entry if required `if ($instructions['insertEvent']) $this->updateCalendar($reply)`;
-         */
 
         $this->categorizeMessage($messageId, $category, $settings);
         $this->processingMessages[] = ["✅" => "Message Categorized: $category"];
         // Generate a reply for the given message
 
-        $this->generateReply($messageId, $instructions);
+        $this->reply[$messageId] = $this->generateReply($instructions);
         $this->processingMessages[] = ["✅" => "Reply generated"];
 
-        // Add a calendar entry if required
+        //dd($this->reply[$messageId]);
         Log::info('👉Reply', ['reply' => $this->reply[$messageId]]);
 
-        /* dd(
-            array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)),
-            json_decode($this->reply[$messageId]['message']['content'], true)['event'] == true,
-            ($instructions == 'insertEvent' || is_array($instructions) && in_array('insertEvent', $instructions))
-        ); */
 
+        // TODO:
+        // Refactor the method below
+        $this->addCalendarEntryIfRequired($messageId, $instructions, $this->reply[$messageId]['message']['content']);
+    }
+
+
+    public function addCalendarEntryIfRequired($messageId, $instructions, $replyMessageContent)
+    {
+        //dd(json_decode($replyMessageContent, true));
+        Log::info('📅 addCalendarEntryIfRequired', ['messageId' => $messageId,'replyMessageContent' => $replyMessageContent]);
         if (
-            array_key_exists('event', json_decode($this->reply[$messageId]['message']['content'], true)) &&
-            json_decode($this->reply[$messageId]['message']['content'], true)['event'] == true &&
+            array_key_exists('event', json_decode($replyMessageContent, true)) &&
+            json_decode($replyMessageContent, true)['event'] == true &&
             ($instructions == 'insertEvent' || is_array($instructions) && in_array('insertEvent', $instructions))
 
         ) {
 
             // get the requested datees fro mteh reply
-            $startDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['start']['dateTime']);
-            $endDateTime = Carbon::parse(json_decode($this->reply[$messageId]['message']['content'], true)['event']['end']['dateTime']);
+            $startDateTime = Carbon::parse(json_decode($replyMessageContent, true)['event']['start']['dateTime']);
+            $endDateTime = Carbon::parse(json_decode($replyMessageContent, true)['event']['end']['dateTime']);
 
             // check calendar availability
             $is_available = $this->checkCalendarAvailability($startDateTime, $endDateTime);
@@ -226,30 +226,32 @@ trait Processable
 
 
 
+
     /**
      * Generate a reply for the given message
      * @param $messageId
      * @param $instructions
      * @return void
      */
-    private function generateReply($messageId, $instructions)
+    private function generateReply($instructions)
     {
         Log::info('5️⃣ Generate a reply...');
         //dd($messageId, $instructions);
         //dd('reply to the message', $this->message);
         // prepare the payload to process the selected message
-        $payload = $this->getPayload($instructions);
+        $payload = $this->preparePayloadFrom($instructions);
         //dd($payload);
         // Use the payload to generate a response
-        $this->reply[$messageId] = $this->getResponse($payload); // Get the response
+        try {
+            $response = $this->getResponse($payload); // Get the response
+            $this->processingMessages[] = ["✅" => 'The reply was generated successfully'];
+        } catch (\Throwable $th) {
+            //throw $th;
+            return back()->with('reply-generated', 'Error: Reply Not generated successfully');
+        }
         // inform the user that the generation was completed
-        $this->processingMessages[] = ["✅" => 'The reply was generated successfully'];
-        session()->flash('reply-generated', 'Reply Generated successfully');
-        Log::info('✅Reply generated', ['reply' => $this->reply[$messageId]]);
-
-        //$this->dispatch('reply-generated', $this->reply[$messageId]);
-
-
+        Log::info('✅Reply generated', ['reply' => $response]);
+        return $response;
     }
 
 
@@ -259,7 +261,7 @@ trait Processable
      * @param $instructions
      * @returns array
      */
-    private function getPayload($instructions = null): array
+    private function preparePayloadFrom($instructions = null): array
     {
 
         if (is_array($instructions)) $instructions = join(',', $instructions);

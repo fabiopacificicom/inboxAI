@@ -32,12 +32,11 @@ class MessageListComponent extends Component
     {
 
         // get the mailboxes to show
-        $mailbox = $this->makeMailboxFrom();
+        $mailbox = $this->makeMailboxFromSettings();
         $this->mailboxes = Cache::rememberForever('mailboxes', function () use ($mailbox) {
             return $mailbox->getMailboxes();
         });
 
-        // TODO: use or remove this method
         // Remove old messages
         $this->removeOlderMessages();
 
@@ -69,11 +68,8 @@ class MessageListComponent extends Component
      * @param $value - the new value for that property
      * @return void
      */
-    public function updated($name, $value)
+    public function updated($name, $value): void
     {
-
-
-
 
         if ($name === 'filter' || $name == 'limit') {
             Setting::updateOrCreate(['key' => $name], ['value' => $value]);
@@ -82,16 +78,18 @@ class MessageListComponent extends Component
     }
 
 
-    /* TODO:
-        Complete the implementation to fetch the message and retrive its body
-        from the imap and store it back in the db
-    */
-    public function fetchMessage($id)
+    /**
+     * Fetch a message from the imap server and update the corresponding model
+     * in the db
+     * @param $id - the id of the message to fetch
+     * @return void
+     */
+    public function fetchMessage($id): void
     {
         //dd($id);
         //$this->loading = true;
         // get the message from the imap server
-        $imapMailbox = $this->makeMailboxFrom(inbox: $this->selectedMailbox);
+        $imapMailbox = $this->makeMailboxFromSettings(inbox: $this->selectedMailbox);
 
         $mail = $imapMailbox->getMail($id);
         $content = $mail?->textPlain;
@@ -112,7 +110,6 @@ class MessageListComponent extends Component
 
         // update the messages collection
         $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
-
     }
 
 
@@ -143,7 +140,7 @@ class MessageListComponent extends Component
         //dd($category, $action, $instructions);
 
         // 4. Perform the actions on the message based on the action
-        $this->performActions($action, $instructions, $messageId, $category, $settings = $this->settings);
+        $this->performActions($action, $instructions, $messageId, $category, $this->settings);
     }
 
 
@@ -163,7 +160,7 @@ class MessageListComponent extends Component
         //dd($mailboxFolder);
 
         $this->selectedMailbox = $mailboxFolder['shortpath'];
-        $mailbox = $this->makeMailboxFrom();
+        $mailbox = $this->makeMailboxFromSettings();
         $mailbox->switchMailbox($mailboxFolder['fullpath']);
         //dd($mailbox);
         $ids = $mailbox->searchMailbox('ALL');
@@ -219,20 +216,18 @@ class MessageListComponent extends Component
         Cache::flush();
     }
 
-    #[On('mailbox-sync-event')]
     /**
      * Update Messages when the event is triggered.
      * @param $data
      * @return void
      */
+    #[On('mailbox-sync-event')]
     public function updateMessages()
     {
         //dd($data);
         $this->messages = Cache::get('messages');
         //dd($this->messages);
     }
-
-
 
 
     /**

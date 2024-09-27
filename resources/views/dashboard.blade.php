@@ -6,6 +6,7 @@
             </h2>
 
             <div class="tools flex items-center">
+                @livewire('ai-reply.knowledge-base-component')
                 @livewire('show-calendar', ['settings' => $settings])
                 @livewire('ai-reply.mailbox-connection-component', ['settings' => $settings])
             </div>

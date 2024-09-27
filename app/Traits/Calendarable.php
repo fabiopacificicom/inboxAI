@@ -25,7 +25,7 @@ trait Calendarable {
 
     #[On('reply-generated')]
     /**
-     * TODO:
+     * TODO: MessageId is not used, if not required condider to remove it
      * Update the calendar
      * @param array $reply
      * @return void
@@ -59,9 +59,8 @@ trait Calendarable {
         $event->save();
         Log::info('✅Event created', ['event' => $event]);
         //dd($event);
-        session()->flash('message', $replyContent['reply'] . 'event ' . $replyContent['event']['summary'] . 'was created');
 
-        return redirect()->back();
+        return redirect()->back()->with('message', $replyContent['reply'] . 'event ' . $replyContent['event']['summary'] . 'was created');
     }
 
 }
