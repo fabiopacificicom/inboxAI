@@ -26,7 +26,7 @@ trait HasMailboxConnection
      * @return Mailbox
      */
 
-    public function makeMailboxFrom(array $settings = [], $inbox = 'INBOX'): Mailbox
+    public function makeMailboxFromSettings(array $settings = [], $inbox = 'INBOX'): Mailbox
     {
         // get the mailbox settings from the parameters or use the default settings
         $username = $settings['username'] ?? config('responder.imap.username');
@@ -79,7 +79,7 @@ trait HasMailboxConnection
         // make the mailbox connection
 
         //dd($this->selectedMailbox, $messageIds);
-        $mailbox = $this->makeMailboxFrom([], $this->selectedMailbox);
+        $mailbox = $this->makeMailboxFromSettings( inbox: $this->selectedMailbox);
         Log::info('trashImapMessagesByMessageIds', [$messageIds]);
 
         foreach ($messageIds as $id) {
@@ -98,7 +98,7 @@ trait HasMailboxConnection
     public function deleteImapMessagesByMessageIds(Collection $messageIds)
     {
         // make the mailbox connection
-        $mailbox = $this->makeMailboxFrom([]);
+        $mailbox = $this->makeMailboxFromSettings();
         Log::info('deleteImapMessagesByMessageIds', [$messageIds]);
 
         foreach ($messageIds as $id) {
@@ -110,7 +110,7 @@ trait HasMailboxConnection
 
     public function emptyMailbox($folder = 'INBOX.Trash')
     {
-        $mailbox = $this->makeMailboxFrom([], $folder);
+        $mailbox = $this->makeMailboxFromSettings( inbox: $folder);
         // remove all messages in the trash
         $ids = $mailbox->searchMailbox('ALL');
         //dd($ids, $folder);
