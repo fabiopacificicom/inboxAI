@@ -18,7 +18,7 @@
 
     <button type="button" popovertarget="knowledge" popoveraction="show" class=" text-xs flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ">
         <i class="bi bi-collection"></i>
-        <span class="hidden sm:inline">{{__('Knowledge Base')}}</span>
+        <span class="hidden md:inline">{{__('Knowledge Base')}}</span>
     </button>
 
     <div id="knowledge" popover class="bg-white p-4 rounded-lg shadow-lg fixed top-0 right-0">
@@ -44,12 +44,25 @@
         <h4 class="mt-6 pb-2 text-lg font-medium text-gray-500">
             External Links
         </h4>
-        <ul>
+        <ul class="url_list">
             @foreach ($links as $link )
-            <li>
-                <a href="{{$link}}" target="_blank" class="hover:bg-gray-200 p-2 rounded-md block mb-2">
-                    <i class="bi bi-box-arrow-up-right"></i> {{$link}}
-                </a>
+
+            <li class="">
+                <div class="flex justify-between items-center hover:bg-gray-200 p-2 rounded-md">
+                    <a href="{{$link->url}}" target="_blank" class=" block mb-2">
+                        <i class="bi bi-box-arrow-up-right"></i> {{$link->url}}
+                    </a>
+
+                    <button type="button" class="hover:bg-red-300 hover:text-red-800 p-2 rounded-lg transition-all" wire:click="delete({{$link}})" wire:confirm>
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="content">
+                    <details>
+                        <summary>View Content</summary>
+                        {{$link->content}}
+                    </details>
+                </div>
             </li>
             @endforeach
 
