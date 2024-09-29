@@ -20,26 +20,38 @@ class KnowledgeBaseComponent extends Component
 
     public function mount()
     {
-        $this->links = Cache::get('links', []);
+        //Cache::forget('links');
+        $links = Url::take(5)->get();
+        $this->links = Cache::get('links', $links ?? []);
+        //dd($this->links);
     }
 
     public function addLink()
     {
         $this->validate([
-            'link' => ['required', 'url', 'unique:urls'],
-        ]);
+            'link' => ['required', 'url', 'unique:urls,url,except,id'],
+        ], ['unique', 'The field must be unique']);
         //dd($this->link, 'here', $this->readWebPageFromUrl($this->link));
+
         // save the link in the database
-        Url::create([
+        $link = Url::create([
             'url' => $this->link,
             'content' => $this->readWebPageFromUrl($this->link),
         ]);
 
         // save the link in the array
-        array_push($this->links, $this->link);
+        $this->links->add($link);
         // store the links to cache
         Cache::forever('links', $this->links);
         // clear the input field
         $this->link = '';
+    }
+
+
+    public function delete($url)
+    {
+        //dd($url);
+        $url->delete();
+        return back()->with('message', 'deleted');
     }
 }
