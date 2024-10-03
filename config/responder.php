@@ -40,9 +40,12 @@ return [
         {"category": "Archive",  "action": true, "instructions": "summarize"}'
     ],
     'assistant' => [
-
-        'tags' => 'http://127.0.0.1:11434/api/tags',
-        'server' => 'http://127.0.0.1:11434/api/chat',
+        'proxy' => env('OLLAMA_PROXY_SERVER'),
+        'tags' => env('OLLAMA_PROXY_SERVER') ?
+            env('OLLAMA_PROXY_SERVER') . '/api/models' : 'http://127.0.0.1:11434/api/tags',
+        'server' => env('OLLAMA_PROXY_SERVER') ?
+            env('OLLAMA_PROXY_SERVER') . '/api/chat' : 'http://127.0.0.1:11434/api/chat',
+        'server_api_token' => env('OLLAMA_PROXY_SERVER_API_TOKEN'),
         'model' => 'llama3:latest',
         'system' => "Act as myself [name], your primary task is to reply to inbox messages. If you are not sure what to reply, summarize the received message, then suggest a potential reply."
     ]
