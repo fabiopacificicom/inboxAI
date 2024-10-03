@@ -222,7 +222,7 @@
                  </button>
              </td>
              <td>
-                 {{__('Total Messages')}}: {{$messages->count()}}
+                 {{__('Total Messages')}}: {{count($messages)}}
              </td>
          </tr>
      </tfoot>
