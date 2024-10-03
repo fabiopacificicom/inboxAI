@@ -8,7 +8,7 @@ use Spatie\GoogleCalendar\Event;
 
 class ShowCalendar extends Component
 {
-    public $period = 'Week';
+    public $period;
     public $events = [];
     public function render()
     {
@@ -18,6 +18,7 @@ class ShowCalendar extends Component
 
     public function mount($settings)
     {
+
         $this->period = $settings['filter'] ?? 'day';
         $this->getEvents();
         // dd($this->events);
@@ -30,12 +31,12 @@ class ShowCalendar extends Component
 
     private function getEvents()
     {
-        switch ($this->period) {
-            case 'Week':
+        switch (strtolower($this->period)) {
+            case 'week':
                 $events = Event::get(now(), now()->addWeek());
                 # week
                 break;
-            case 'Month':
+            case 'month':
                 # month
                 $events = Event::get(now(), now()->addMonth());
                 break;
