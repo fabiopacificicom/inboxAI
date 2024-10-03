@@ -61,7 +61,7 @@ trait HasMailboxConnection
         })];
 
         if (empty($mailboxCategory) || count($mailboxCategory) == 0) {
-            throw new \Exception("The provided category is not a vailad mailbox folder", 1);
+            return false;
         }
 
         return $mailboxCategory[0]['shortpath'];
@@ -79,7 +79,7 @@ trait HasMailboxConnection
         // make the mailbox connection
 
         //dd($this->selectedMailbox, $messageIds);
-        $mailbox = $this->makeMailboxFromSettings( inbox: $this->selectedMailbox);
+        $mailbox = $this->makeMailboxFromSettings(inbox: $this->selectedMailbox);
         Log::info('trashImapMessagesByMessageIds', [$messageIds]);
 
         foreach ($messageIds as $id) {
@@ -110,7 +110,7 @@ trait HasMailboxConnection
 
     public function emptyMailbox($folder = 'INBOX.Trash')
     {
-        $mailbox = $this->makeMailboxFromSettings( inbox: $folder);
+        $mailbox = $this->makeMailboxFromSettings(inbox: $folder);
         // remove all messages in the trash
         $ids = $mailbox->searchMailbox('ALL');
         //dd($ids, $folder);
