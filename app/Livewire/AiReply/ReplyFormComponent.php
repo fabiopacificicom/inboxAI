@@ -40,29 +40,9 @@ class ReplyFormComponent extends Component
 
     public function updatedContent($value)
     {
+        //dd($value);
         $this->content = $value;
     }
-
-/*     public function replyMessage()
-    {
-        //dd($this->content, $this->message, $this->reply);
-        // Process the message
-        //dd($this->reply[$messageId]);
-        //dd($this->reply['message']['content']);
-        $replyArray = json_decode($this->reply['message']['content'], true);
-        //dd($replyArray);
-        if (array_key_exists('category', $replyArray)) {
-            $category = $replyArray['category'];
-            // Apply classification
-            $this->classify($this->message['messageId'], $category);
-        }
-
-        // add a calendar entry if necessary
-        if (array_key_exists('event', $replyArray) && $replyArray['event']) {
-            $this->calendar($replyArray['event']);
-        }
-    } */
-
 
     public function sendReply()
     {
