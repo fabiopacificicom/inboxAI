@@ -87,6 +87,5 @@ class MailboxConnectionComponent extends Component
     {
 
         Setting::updateOrCreate(['key' => $name], ['value' => $value]);
-
     }
 }
