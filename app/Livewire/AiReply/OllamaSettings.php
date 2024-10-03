@@ -39,19 +39,40 @@ class OllamaSettings extends Component
 
     public function getModels()
     {
+
+        // retrieve the server address
+        $server_address = $this->ollamaServerAddress . config('responder.assistant.tags');
+        // get the access token incase required
+        $accessToken = config('responder.assistant.server_api_token');
+        // try to get the models from the server
+
+        //dd($server_address, $accessToken);
         try {
-            //code...
+            // return the response from the server as a json
             return Http::timeout(5000)
-                ->withHeader('x-access-token', config('responder.assistant.server_api_token'))->get(config('responder.assistant.tags'))
+                ->withHeader('x-access-token', $accessToken)
+                ->get($server_address)
                 ->json();
+            // set the connection error to false
             $this->connectionError = false;
         } catch (\Throwable $th) {
-            //throw $th;
             session()->flash('message', $th->getMessage());
             $this->connectionError = true;
             Log::error($th->getMessage());
+            return false;
         }
     }
+
+
+    public function refreshModels()
+    {
+
+        //dd(config('responder.assistant.tags'), $this->ollamaServerAddress);
+        $this->models = $this->getModels();
+        //dd($this->models);
+        $this->dispatch('models-updated')->self();
+    }
+
 
     public function updated($name, $value)
     {
@@ -62,9 +83,13 @@ class OllamaSettings extends Component
 
         //dd($setting, $name, $value);
         if ($name === 'ollamaServerAddress') {
+            //dd($name, $value);
             // test the connection
             $this->checkOllamaConnection($value);
+
             // save in the settings table
+            // update the models list
+            $this->models = $this->getModels();
         }
     }
 
