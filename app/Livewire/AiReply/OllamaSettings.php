@@ -30,7 +30,6 @@ class OllamaSettings extends Component
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
         $this->classifierSystem = $classifierSystem;
-
     }
 
     public function render()
@@ -42,8 +41,9 @@ class OllamaSettings extends Component
     {
         try {
             //code...
-            $response = Http::get(config('responder.assistant.tags'));
-            return $response->json();
+            return Http::timeout(5000)
+                ->withHeader('x-access-token', config('responder.assistant.server_api_token'))->get(config('responder.assistant.tags'))
+                ->json();
             $this->connectionError = false;
         } catch (\Throwable $th) {
             //throw $th;
