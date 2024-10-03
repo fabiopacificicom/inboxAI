@@ -21,8 +21,6 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
 
-
-
     $settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {
         return [$item['key'] => $item['value']];
     });
