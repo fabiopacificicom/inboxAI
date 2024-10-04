@@ -18,8 +18,9 @@ trait HandleAiResponse
         //dd($payload);
 
         $response = Http::timeout(5000)->withHeader('x-access-token', config('responder.assistant.server_api_token'))
-            ->post(Setting::where('key', 'ollamaServerAddress')
-                ->first()?->value ?? config('responder.assistant.server'), $payload);
+            ->post((Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server')) . config('responder.assistant.chat'), $payload);
+
+
         //dd($response->json());
 
         $response->onError(function ($message) {
