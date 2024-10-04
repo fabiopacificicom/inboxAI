@@ -6,7 +6,6 @@ use App\Models\Message;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
-use Livewire\WithPagination;
 use App\Traits\Calendarable;
 use App\Traits\Processable;
 use App\Models\Setting;
@@ -16,7 +15,7 @@ use App\Traits\Helpers;
 class MessageListComponent extends Component
 {
 
-    use WithPagination, Calendarable, Processable, Helpers;
+    use Calendarable, Processable, Helpers;
 
 
     public $messages;
@@ -50,7 +49,7 @@ class MessageListComponent extends Component
         //dd(Cache::get('messages'));
         $this->messages = Cache::get('messages') ?? $this->retreiveLatestMessages();
         //dd('here');
-        Log::info('MessageListComponent Mounted', [$this->messages]);
+        Log::info('MessageListComponent Mounted with ' . $this->messages->count() . ' messages.');
     }
 
     /**
@@ -77,6 +76,20 @@ class MessageListComponent extends Component
         }
     }
 
+
+    public function loadMore()
+    {
+        $this->limit += 10;
+        Setting::updateOrCreate(['key' => 'limit'], ['value' => $this->limit]);
+        $this->dispatch('sync-mailbox')->to(MailboxConnectionComponent::class);
+    }
+
+
+    public function refreshMessages()
+    {
+        Cache::delete('messages');
+        $this->dispatch('sync-mailbox');
+    }
 
     /**
      * Fetch a message from the imap server and update the corresponding model
@@ -124,6 +137,8 @@ class MessageListComponent extends Component
      */
     public function processMessage($messageId): void
     {
+        $this->fetchMessage($messageId);
+
         // sets the processing messages to an empty array
         $this->processingMessages = [];
 
@@ -132,15 +147,17 @@ class MessageListComponent extends Component
         //dd($message);
 
         // 2. classify the message for further processing
-        $response = $this->classify($message);
-        //dd($response);
+        [$action, $instructions] = $this->classify($message);
+        //dd($action, $instructions);
 
+        /* TODO:
+        //Remove @deprecated
         // 3. Extract the data from the classifier response
-        [$category, $action, $instructions] = $this->extractDataFrom($response);
-        //dd($category, $action, $instructions);
+        //[$category, $action, $instructions] = $this->extractDataFrom($response);
+        //dd($category, $action, $instructions); */
 
         // 4. Perform the actions on the message based on the action
-        $this->performActions($action, $instructions, $messageId, $category, $this->settings);
+        $this->performActions($action, $instructions, $messageId, $this->settings);
     }
 
 
