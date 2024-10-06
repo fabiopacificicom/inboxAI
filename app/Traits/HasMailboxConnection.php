@@ -229,6 +229,10 @@ trait HasMailboxConnection
                 //$mail = $mailbox->getMail($num, $markAsSeen);
                 //dd($num, $mail->mailboxFolder);
 
+
+                $date = $this->normalizeDate($mail->date);
+
+
                 $message = [
                     'message_identifier' => $mail->id,
                     'is_seen' => $mail->isSeen,
@@ -241,7 +245,7 @@ trait HasMailboxConnection
                     'from' => $mail->fromAddress,
                     'sender' => isset($mail->fromName) ? $mail->fromName : '',
                     'reply_to_addresses' => array_keys($mail->replyTo),
-                    'date' => $this->normalizeDate($mail->date),
+                    'date' => $date ?? '',
                     /* 'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),*/
                     'mailbox_folder' => $mail->mailboxFolder
                     // Add more fields as needed
@@ -318,10 +322,14 @@ trait HasMailboxConnection
         // Attempt to parse the date using known formats
         foreach ($knownFormats as $format) {
 
-            $date = Carbon::createFromFormat($format, $dateString);
-
-            if ($date !== false) {
-                return $date;
+            try {
+                $date = Carbon::createFromFormat($format, $dateString);
+                if ($date !== false) {
+                    return $date;
+                }
+            } catch (\Throwable $th) {
+                Log::error($th->getMessage() . "Date: $dateString");
+                continue;
             }
         }
 
