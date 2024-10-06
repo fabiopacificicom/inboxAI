@@ -1,11 +1,11 @@
-<div class="grid grid-cols-1 sm:flex max-w-7xl mx-auto">
+<div class="grid grid-cols-1 lg:flex max-w-7xl mx-auto">
 
-    <div class="sm:w-56 p-4">
+    <div class="lg:w-56 p-4">
         @include('partials.mailbox.mailboxes-sidebar')
     </div>
 
 
-    <div id="inbox-table" class="bg-white shadow-sm sm:rounded-lg w-full">
+    <div id="inbox-table" class="bg-white shadow-sm sm:rounded-lg w-full overflow-x-auto">
 
         @include('partials.mailbox.top-toolbar')
 

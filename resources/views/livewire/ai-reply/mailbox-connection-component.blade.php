@@ -17,7 +17,7 @@
                     <path
                         d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-1.646a.5.5 0 0 1-.722-.016l-1.149-1.25a.5.5 0 1 1 .737-.676l.28.305V11a.5.5 0 0 1 1 0v1.793l.396-.397a.5.5 0 0 1 .708.708z" />
                 </svg>
-                <span class="text-xs">{{ __('Download messages') }}</span>
+                <span class="hidden sm:text-xs">{{ __('Download messages') }}</span>
 
             </span>
 
@@ -28,7 +28,7 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
                 </path>
             </svg>
-            <span wire:loading class="text-xs">{{ __('Downloading...') }}</span>
+            <span wire:loading class="hidden md:inline text-xs">{{ __('Downloading...') }}</span>
 
         </button>
         {{-- Mailbox settings --}}
@@ -42,7 +42,7 @@
                 <path
                     d="M11.793 8.5H9v-1h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.354-.146zM5 7c0 .552-.448 0-1 0s-1 .552-1 0a1 1 0 0 1 2 0" />
             </svg>
-            <span class="text-xs">Settings</span>
+            <span class="hidden md:inline text-xs">Settings</span>
         </button>
 
     </div>

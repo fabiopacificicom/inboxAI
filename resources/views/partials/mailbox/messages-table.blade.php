@@ -2,20 +2,21 @@
      <thead>
          <tr>
              <th
-                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Date
              </th>
-             <th
-                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                 Sender Details
-             </th>
+
 
              <th
-                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-1/2 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Subject
              </th>
              <th
-                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 Sender Details
+             </th>
+             <th
+                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Actions
              </th>
          </tr>
@@ -23,27 +24,47 @@
      <tbody>
          @forelse ($messages as $index => $message)
          <tr wire:key="{{ $message['message_identifier'] }}">
-             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white text-sm">
                  {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
              </td>
              {{-- /date --}}
-             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+             <td class="w-1/2 px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                 <p>
+                     {{ $message['subject'] }}
+                 </p>
+                 <small class="text-xs"><em>From:</em></small> {{ $message['from'] }} <br>
 
-                 <strong><em>Sender:</em></strong> {{ $message['sender'] }}<br>
-                 <strong><em>From:</em></strong> {{ $message['from'] }} <br>
-                 <strong><em>Reply to:</em></strong>
-                 {{ Arr::join($message['reply_to_addresses'], ',') }}
-             </td>
-             {{-- /sender details --}}
-             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                 {{ $message['subject'] }}
              </td>
              {{-- /subject  --}}
+             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+
+                 <button type="button" popoveraction="show" popovertarget="info-{{$message['id']}}">
+                     <i class="bi bi-info-circle"></i>
+                 </button>
+
+                 <dialog id="info-{{$message['id']}}" class="text-left relative min-w-52 overflow-auto p-6 border border-gray-300 shadow-lg rounded-lg" popover>
+
+                     <strong><em>Sender:</em></strong> {{ $message['sender'] }}<br>
+                     <strong><em>From:</em></strong> {{ $message['from'] }} <br>
+
+                     <strong><em>Reply to:</em></strong>
+                     {{ Arr::join($message['reply_to_addresses'], ',') }}
+
+                     <button type="button" class="absolute right-1 top-1" popoveraction="hide" popovertarget="info-{{$message['id']}}">
+                         <i class="bi bi-x text-lg"></i>
+                     </button>
+
+                 </dialog>
+
+             </td>
+             {{-- /sender details --}}
+
              <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
 
-                 <div class="flex items-center gap-1">
+                 <div class="flex justify-center items-center gap-1">
 
                      <button
+                         title="Process message"
                          class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
                          wire:click="processMessage('{{ $message['message_identifier'] }}')"
                          wire:loading.attr="disabled"
@@ -51,7 +72,10 @@
                          wire:loading.class="opacity-50 cursor-not-allowed">
                          <span wire:loading.remove
                              wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                             Process
+                             <i class="bi bi-body-text"></i>
+                             <span class="hidden lg:inline uppercase text-xs">
+                                 Process
+                             </span>
                          </span>
                          <span wire:loading
                              wire:target="processMessage('{{ $message['message_identifier'] }}')"
@@ -66,7 +90,7 @@
                                  </path>
                              </svg>
                          </span>
-                         <span wire:loading
+                         <span class="text-xs uppercase" wire:loading
                              wire:target="processMessage('{{ $message['message_identifier'] }}')">
                              In progress
                          </span>
@@ -76,8 +100,12 @@
 
                      <button
                          popovertarget="message-popover-{{ $index }}"
-                         class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-dark-950 focus:outline-none focus:shadow-outline">
-                         Open
+                         class="px-4 py-2 rounded-lg {{$message['content'] ? 'border border-green-600 bg-green-300 text-green-950' : 'bg-gray-200 text-gray-600'}}  hover:bg-dark-950 focus:outline-none focus:shadow-outline">
+                         <i class="bi bi-arrows-angle-expand"></i>
+
+                         <span class="hidden lg:inline">
+                             Open
+                         </span>
                      </button>
                  </div>
 

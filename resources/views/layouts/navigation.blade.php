@@ -4,10 +4,11 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
+                <div class="shrink-0 flex items-center gap-1 relative">
                     <a href="{{ route('dashboard') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
+                    <span style="font-size: 0.5rem;" class="bg-red-400 text-red-950 rounded-lg p-1 uppercase absolute -right-1/4 top-1">alpha</span>
                 </div>
 
                 <!-- Navigation Links -->
