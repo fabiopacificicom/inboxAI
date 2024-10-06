@@ -45,6 +45,37 @@ return [
         'chat' => '/api/chat',
         'server_api_token' => env('OLLAMA_PROXY_SERVER_API_TOKEN', ''),
         'model' => 'llama3:latest',
-        'system' => "Act as myself [name], your primary task is to reply to inbox messages. If you are not sure what to reply, summarize the received message, then suggest a potential reply."
+        'system' => "Act as myself [name], your primary task is to reply to inbox messages. If you are not sure what to reply, summarize the received message, then suggest a potential reply.",
+        'json_formats' => [
+            'withEvent' => '[
+                    "reply": "The reply for the given message",
+                    "event": {
+                            "summary": "Google I/O 2015",
+                            "description": "A chance to hear more about Googles developer products.",
+                            "start": {
+                                "dateTime": "2015-05-28T09:00:00-07:00",
+                                "timeZone": "America/Los_Angeles"
+                            },
+                            "end": {
+                                "dateTime": "2015-05-28T17:00:00-07:00",
+                                "timeZone": "America/Los_Angeles"
+                            },
+                            "recurrence": {
+                                "RRULE": "FREQ=DAILY;COUNT=2"
+                            },
+                            "attendees": [
+                                {"email": "lpage@example.com"},
+                                {"email": "sbrin@example.com"}
+                            ],
+                            "reminders": {
+                                "useDefault": false,
+                                "overrides": [
+                                    {"method": "email", "minutes": 1440},
+                                    {"method": "popup", "minutes": 10}
+                                ]
+                            }
+                        }
+                    ]'
+        ]
     ]
 ];
