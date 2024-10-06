@@ -105,16 +105,16 @@ class MessageListComponent extends Component
         $imapMailbox = $this->makeMailboxFromSettings(inbox: $this->selectedMailbox);
 
         $mail = $imapMailbox->getMail($id);
+        //dd($mail);
         $content = $mail?->textPlain;
+
         if (strlen($content)  == 0) {
-            $content = $this->convertHtmlToPlainText($mail?->textHtml);
+            $content = $mail?->textHtml;
         }
-        $this->fetching = false;
-
-        // parse the content and extract the message body as text
-        // if content in an html format, convert it to plain
-
         //dd($content);
+        $content =  $this->convertHtmlToPlainText($content);
+        //dd($content);
+        $this->fetching = false;
 
         // find the mesage from the db
         $message = Message::where('message_identifier', $id)->first();
