@@ -61,6 +61,278 @@ When you want to insert something into the calendar, you must format the respons
     ```
 [/tools]
 
+"""
+# Examples for calendar events
 
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Upcoming Project Review`
+Content: `Please confirm your availability to attend a project review meeting on March 10th at 2 PM EST.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": {
+    "summary": "Project Review",
+    "location": "Conference Room A",
+    "description": "Review of ongoing projects and progress.",
+    "start": {
+      "dateTime": "2023-03-10T14:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "end": {
+      "dateTime": "2023-03-10T16:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {"email": "john.doe@example.com"},
+      {"email": "jane.smith@example.com"}
+    ],
+    "reminders": {
+      "useDefault": false,
+      "overrides": []
+    }
+  },
+  "reply": "Confirmed: I will be attending the Project Review on March 10th."
+}
 
 """
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `New Team Member Onboarding`
+Content: `Please confirm your availability to attend a team member onboarding meeting on March 15th at 3 PM EST.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": {
+    "summary": "Team Member Onboarding",
+    "location": "Training Room B",
+    "description": "Introduction of new team members and company policies.",
+    "start": {
+      "dateTime": "2023-03-15T15:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "end": {
+      "dateTime": "2023-03-15T17:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {"email": "john.doe@example.com"},
+      {"email": "jane.smith@example.com"}
+    ],
+    "reminders": {
+      "useDefault": true,
+      "overrides": []
+    }
+  },
+  "reply": "Confirmed: I will be attending the Team Member Onboarding on March 15th."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Company Wide Meeting`
+Content: `Please confirm your availability to attend a company wide meeting on April 1st at 10 AM EST.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": {
+    "summary": "Company Wide Meeting",
+    "location": "Conference Center A",
+    "description": "Announcement of new company initiatives and strategies.",
+    "start": {
+      "dateTime": "2023-04-01T10:00:00-04:00",
+      "timeZone": "America/New_York"
+ },
+    "end": {
+      "dateTime": "2023-04-01T12:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {"email": "john.doe@example.com"},
+      {"email": "jane.smith@example.com"}
+    ],
+    "reminders": {
+      "useDefault": false,
+      "overrides": []
+    }
+  },
+  "reply": "Confirmed: I will be attending the Company Wide Meeting on April 1st."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Client Meeting`
+Content: `Please confirm your availability to attend a client meeting on April 15th at 2 PM EST.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": {
+    "summary": "Client Meeting",
+    "location": "Meeting Room C",
+    "description": "Discussion of ongoing projects and progress with clients.",
+    "start": {
+      "dateTime": "2023-04-15T14:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "end": {
+      "dateTime": "2023-04-15T16:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {"email": "john.doe@example.com"},
+      {"email": "jane.smith@example.com"}
+    ],
+    "reminders": {
+      "useDefault": true,
+      "overrides": []
+    }
+  },
+  "reply": "Confirmed: I will be attending the Client Meeting on April 15th."
+}
+
+"""
+
+
+# Examples newsletter summaries no calendar events
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `New Company Newsletter`
+Content: `The Spring edition of our company newsletter is out! Read about new product launches, employee spotlights, and company
+updates.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "The latest company newsletter is out! Read about our new product launches and employee spotlights."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Update on Company Initiatives`
+Content: `We are excited to share the latest update on our company's environmental initiatives, including our sustainability goals and
+progress.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "The quarterly newsletter is out! Read about our new product launches, employee spotlights, and company updates."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Employee Recognition Program`
+Content: `We are proud to announce the latest recipients of our Employee Recognition Award. Please read about their achievements in
+this quarter's newsletter!`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "The Spring edition of our company newsletter is out! Read about employee spotlights, company updates, and new
+initiatives."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Company News and Updates`
+Content: `Get the latest news on company updates, product launches, and employee achievements in this quarter's newsletter.`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "The company newsletter is out! Read about our new product launches, employee spotlights, and company updates."
+}
+
+"""
+
+# Examples of generated replies
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `What is your favorite hobby?`
+Content: `I'm curious, what do you like to do in your free time?`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "That's a great question! In my free time, I enjoy hiking and trying out new recipes."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `What is the best way to learn Python?`
+Content: `I'm looking for advice on how to improve my coding skills. What resources would you recommend?`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "There are many great resources available! I'd suggest checking out online tutorials like Codecademy or Coursera, and also
+joining a coding community or meetup group."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `Can you recommend a good book to read?`
+Content: `I'm looking for something new to get into. What have you enjoyed reading lately?`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "I've really been enjoying 'The Hitchhiker's Guide to the Galaxy' by Douglas Adams. It's a fun and quirky read."
+}
+
+"""
+
+MESSAGE user """
+Sender: `<john.doe@example.com>`
+Subject: `What is your favorite travel destination?`
+Content: `I'm planning a trip soon and I'd love some recommendations! What place would you suggest visiting?`
+"""
+
+MESSAGE assistant """
+
+{
+  "event": false,
+  "reply": "That's a tough one, but I think Iceland is a really special place. The landscapes are breathtaking and there's so much to
+see and do."
+}
+
+"""
+
+
