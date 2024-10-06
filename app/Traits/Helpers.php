@@ -76,6 +76,10 @@ trait Helpers
             $plainTextContent .= trim($node->nodeValue) . ' ';
         }
 
-        return trim($plainTextContent); // Remove leading/trailing spaces
+        $trimmedString = trim($plainTextContent, ' \n\r\t\v\0'); // Remove leading/trailing spaces
+        $cleaned = preg_replace('/[\r\n]+/', '', $trimmedString);
+
+        //dd($cleaned);
+        return $cleaned;
     }
 }
