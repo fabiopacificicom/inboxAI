@@ -20,12 +20,12 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 dark:bg-slate-800">
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  dark:bg-transparent hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div class="flex gap-2 items-center">
-                                <img src="{{ asset('storage/' . Auth::user()->profile_image )}}" width="40" height="40" class=" w-11 h-11 object-cover rounded-full border-4 border-gray-200 shadow-sm" />
+                                <img src="{{ asset('storage/' . Auth::user()->profile_image )}}" width="32" height="32" class="w-8 h-8 object-cover rounded-full border-4 border-gray-200 shadow-sm" />
                                 {{ Auth::user()->name }}
                             </div>
 

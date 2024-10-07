@@ -22,6 +22,7 @@
          </tr>
      </thead>
      <tbody>
+         @if(!$messages == null)
          @forelse ($messages as $index => $message)
          <tr wire:key="{{ $message['message_identifier'] }}">
              <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
@@ -62,42 +63,44 @@
              <td class="px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
 
 
+                 <div class="flex flex-wrap gap-1 justify-end">
 
-                 <button
-                     title="Process message"
-                     class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                     wire:click="processMessage('{{ $message['message_identifier'] }}')"
-                     wire:loading.attr="disabled"
-                     wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                     wire:loading.class="opacity-50 cursor-not-allowed">
-                     <span wire:loading.remove
-                         wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                         <i class="bi bi-body-text"></i>
-                         <span class="hidden lg:inline uppercase text-xs">
-                             Process
-                         </span>
-                     </span>
-                     <span wire:loading
+                     <button
+                         title="Process message"
+                         class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
+                         wire:click="processMessage('{{ $message['message_identifier'] }}')"
+                         wire:loading.attr="disabled"
                          wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                         class="absolute left-0 right-0 mx-auto">
-                         <svg class="animate-spin h-5 w-5 mr-3"
-                             xmlns="http://www.w3.org/2000/svg" fill="none"
-                             viewBox="0 0 24 24">
-                             <circle class="opacity-25" cx="12" cy="12" r="10"
-                                 stroke="currentColor" strokeWidth="4"></circle>
-                             <path class="opacity-75" fill="currentColor"
-                                 d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
-                             </path>
-                         </svg>
-                     </span>
-                     <span class="text-xs uppercase" wire:loading
-                         wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                         In progress
-                     </span>
-                 </button>
-                 {{-- /Process message button --}}
+                         wire:loading.class="opacity-50 cursor-not-allowed">
+                         <span wire:loading.remove
+                             wire:target="processMessage('{{ $message['message_identifier'] }}')">
+                             <i class="bi bi-body-text"></i>
+                             <span class="hidden lg:inline uppercase text-xs">
+                                 Process
+                             </span>
+                         </span>
+                         <span wire:loading
+                             wire:target="processMessage('{{ $message['message_identifier'] }}')"
+                             class="absolute left-0 right-0 mx-auto">
+                             <svg class="animate-spin h-5 w-5 mr-3"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none"
+                                 viewBox="0 0 24 24">
+                                 <circle class="opacity-25" cx="12" cy="12" r="10"
+                                     stroke="currentColor" strokeWidth="4"></circle>
+                                 <path class="opacity-75" fill="currentColor"
+                                     d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
+                                 </path>
+                             </svg>
+                         </span>
+                         <span class="text-xs uppercase" wire:loading
+                             wire:target="processMessage('{{ $message['message_identifier'] }}')">
+                             In progress
+                         </span>
+                     </button>
+                     {{-- /Process message button --}}
 
-                 @include('partials.message.dialog-modal')
+                     @include('partials.message.dialog-modal')
+                 </div>
 
              </td>
          </tr>
@@ -123,6 +126,7 @@
              </td>
          </tr>
          @endforelse
+         @endif
      </tbody>
 
      <tfoot class="py-3 text-gray-900 dark:text-slate-400">
@@ -137,7 +141,7 @@
                  </button>
              </td>
              <td>
-                 {{__('Total Messages')}}: {{count($messages)}}
+                 {{__('Total Messages')}}: {{count($messages ?? [])}}
              </td>
          </tr>
      </tfoot>
