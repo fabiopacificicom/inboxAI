@@ -16,15 +16,15 @@
         }
     </style>
 
-    <button type="button" popovertarget="knowledge" popoveraction="show" class=" text-xs flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ">
+    <button type="button" popovertarget="knowledge" popoveraction="show" class=" text-xs flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ">
         <i class="bi bi-collection"></i>
         <span class="hidden md:inline">{{__('Knowledge Base')}}</span>
     </button>
 
-    <div id="knowledge" popover class="bg-white p-4 rounded-lg shadow-lg fixed top-0 right-0">
+    <div id="knowledge" popover class="bg-white dark:bg-slate-800 dark:text-slate-400 p-4 rounded-lg shadow-lg fixed top-0 right-0">
         <div class="flex items-center justify-between py-3 mb-3 mt-2">
             <h3 class="pb-2 text-lg font-medium text-gray-500">Knowledge base</h3>
-            <button type="button" class="p-3 text-xl text-gray-700 hover:text-gray-100 hover:bg-gray-800 transition-all rounded-lg" popoveraction="hide" popovertarget="knowledge">
+            <button type="button" class="p-3 text-xl text-gray-700 dark:hover:bg-slate-800 hover:text-gray-100 hover:bg-gray-800 transition-all rounded-lg" popoveraction="hide" popovertarget="knowledge">
                 <i class="bi bi-x"></i>
             </button>
         </div>
@@ -48,7 +48,7 @@
             @foreach ($links as $link )
 
             <li class="">
-                <div class="flex justify-between items-center hover:bg-gray-200 p-2 rounded-md">
+                <div class="flex justify-between items-center dark:hover:bg-slate-700 hover:bg-gray-200 p-2 rounded-md">
                     <a href="{{$link->url}}" target="_blank" class=" block mb-2">
                         <i class="bi bi-box-arrow-up-right"></i> {{$link->url}}
                     </a>

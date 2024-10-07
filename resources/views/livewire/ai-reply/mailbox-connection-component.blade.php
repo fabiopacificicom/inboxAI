@@ -5,7 +5,7 @@
         {{-- Syncronize mailbox (downloads messages) --}}
         <button id="sync" wire:click="connectMailbox" wire:target="connectMailbox"
             wire:loading.class="opacity-50 cursor-wait" wire:loading.attr="disabled"
-            class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+            class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
 
 
 
@@ -33,7 +33,7 @@
         </button>
         {{-- Mailbox settings --}}
         <button title="mailbox settings"
-            class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-5"
+            class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200  dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-5"
             popovertarget="mailbox-settings" popovertargetaction="show">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-mailbox" viewBox="0 0 16 16">
@@ -47,7 +47,7 @@
 
     </div>
 
-    <div id="mailbox-settings" popover class="bg-white shadow rounded w-full max-w-7xl mx-auto p-6">
+    <div id="mailbox-settings" popover class="bg-white dark:bg-slate-800 dark:border dark:border-slate-900 dark:text-slate-400 shadow rounded w-full max-w-7xl mx-auto p-6">
 
         {{-- Mailbox settings --}}
 

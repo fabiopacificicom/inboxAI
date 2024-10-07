@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class=" flex items-center justify-between">
-            <h2 class="font-semibold text-xs uppercase md:text-sm lg:text-lg text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xs uppercase md:text-sm lg:text-lg text-gray-800 dark:text-slate-400 leading-tight">
 
                 <i class="bi bi-ui-checks-grid"></i>
                 {{ __('Dashboard') }}

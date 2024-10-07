@@ -14,7 +14,7 @@
                 class="w-4 h-4 rounded-full inline-block {{ !$connectionError ? 'bg-green-500' : 'bg-red-500' }}"></span>
         </label>
 
-        <input type="text" wire:model.blur="ollamaServerAddress" name="ollamaServerAddress" id="ollamaServerAddress" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <input type="text" wire:model.blur="ollamaServerAddress" name="ollamaServerAddress" id="ollamaServerAddress" class="w-full p-2 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
         @if ($connectionError)
         <div class="text-sm text-red-500">{{ $connectionError }}</div>
@@ -47,7 +47,7 @@
         <div class="mb-3">
             <label for="assistant-model" class="block text-gray-600">Assistant Model</label>
             <select name="assistant-model" id="assistant-model" wire:model.live="selectedModel"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+                class="w-full p-2 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
 
 
                 @if (is_array($models) && array_key_exists('models', $models))
@@ -66,7 +66,7 @@
         <div class="mb-3">
             <label for="classifier-model" class="block text-gray-600">Classifier model</label>
             <select name="classifier-model" id="classifier-model" wire:model.live="selectedClassifier"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+                class="w-full p-2 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
                 @if (is_array($models) && array_key_exists('models', $models))
 
                 @forelse ($models['models'] as $model)
@@ -88,7 +88,7 @@
     {{-- system prompts --}}
     <div class="mb-3">
         <label for="classifierSystem" class="text-gray-600 mt-4 block">Classifier System</label>
-        <textarea class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+        <textarea class="w-full p-2 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
             wire:model.live.delay3s="classifierSystem" name="classifierSystem" id="classifierSystem" cols="30"
             rows="10"></textarea>
         @error('classifierSystem')
@@ -100,7 +100,7 @@
 
     <div class="mb-3">
         <label for="assistantSystem" class="text-gray-600 mt-4 block">Assistant System</label>
-        <textarea class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+        <textarea class="w-full p-2 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
             wire:model.live.delay3s="assistantSystem" name="assistantSystem" id="assistantSystem" cols="30" rows="10"></textarea>
         @error('assistantSystem')
         <span class="error">{{ $message }}</span>

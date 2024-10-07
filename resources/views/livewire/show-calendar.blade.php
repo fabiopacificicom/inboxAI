@@ -18,15 +18,15 @@
         }
     </style>
     <button popovertarget="calendar" popovertargetaction="show"
-        class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-xs">
+        class="flex items-center gap-1 p-3 rounded-xl hover:bg-gray-200  dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-xs">
         <i class="bi bi-calendar3-week"></i>
         <span class="hidden md:inline">{{ __('Calendar') }}</span>
     </button>
-    <div id="calendar" popover class="bg-white p-4 rounded-lg shadow-lg fixed top-0 right-0">
+    <div id="calendar" popover class="bg-white dark:bg-slate-800 dark:text-slate-400  p-4 rounded-lg shadow-lg fixed top-0 right-0">
         <div class="flex justify-between">
             <h3 class="text-gray-800 text-lg">Calendar ({{ $period }})</h3>
 
-            <select name="period" id="period" wire:model.live="period" class="border-none">
+            <select name="period" id="period" wire:model.live="period" class="border-none dark:bg-slate-800">
                 <option value="Week" {{strtolower($period) == 'week' ? 'selected' : ''}}>Next Week</option>
                 <option value="Month" {{strtolower($period) == 'month' ? 'selected' : ''}}>Next Month</option>
                 <option value="Year" {{strtolower($period) == 'year' ? 'selected' : ''}}>Next Year</option>
@@ -34,7 +34,7 @@
         </div>
 
         @forelse ($events as $event)
-        <div class="calendar_entry hover:bg-gray-100 border-b-2 p-2 lg:p-4 rounded-lg relative">
+        <div class="calendar_entry bg-gray-100 hover:bg-gray-200 my-2 dark:bg-slate-700 dark:hover:bg-slate-800 p-2 lg:p-4 rounded-sm relative">
             {{-- dd($event, $event->startDateTime->diffForHumans(), $event->htmlLink) --}}
             <p>{{ $event['summary'] }}</p>
             <p>{{ $event['description'] }}</p>

@@ -35,7 +35,7 @@
 
 dialog#settings
 {
-    @apply bg-white shadow-lg rounded-md;
+    @apply shadow-lg rounded-md;
     width: 90%;
     max-width: 1176px;
     margin: auto;

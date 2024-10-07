@@ -5,7 +5,7 @@
 
         @teleport('.tools')
         <button
-            class=" sticky top-0 right-0 flex items-center gap-2 p-3 text-gray-600 hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+            class="sticky top-0 right-0 flex items-center gap-2 p-3 text-gray-400 dark:hover:bg-slate-900 dark:hover:text-slate-300 rounded-lg hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
             popovertarget="settings" popoveraction="show">
             {{ __('AI') }}
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars"
@@ -15,7 +15,7 @@
             </svg>
         </button>
         @endteleport
-        <dialog id="settings" popover>
+        <dialog id="settings" popover class="bg-white dark:bg-slate-800 dark:border-slate-800 dark:text-slate-300">
             @livewire('ai-reply.ollama-settings', [
             'selectedModel' => $selectedModel,
             'selectedClassifier' => $selectedClassifier,
