@@ -5,7 +5,7 @@
     </div>
 
 
-    <div id="inbox-table" class="bg-white shadow-sm sm:rounded-lg w-full overflow-x-auto">
+    <div id="inbox-table" class="bg-white dark:bg-slate-800 dark:text-white shadow-sm sm:rounded-lg w-full overflow-x-auto">
 
         @include('partials.mailbox.top-toolbar')
 

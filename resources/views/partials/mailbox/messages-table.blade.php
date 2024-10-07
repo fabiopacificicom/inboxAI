@@ -2,21 +2,21 @@
      <thead>
          <tr>
              <th
-                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-slate-700 dark:border-slate-800 dark:text-slate-400 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Date
              </th>
 
 
              <th
-                 class="w-1/2 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-1/2 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-slate-700 dark:border-slate-800 dark:text-slate-400 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Subject
              </th>
              <th
-                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="w-24 px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-slate-700 dark:border-slate-800 dark:text-slate-400 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Sender Details
              </th>
              <th
-                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-slate-700 dark:border-slate-800 dark:text-slate-400 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                  Actions
              </th>
          </tr>
@@ -24,11 +24,11 @@
      <tbody>
          @forelse ($messages as $index => $message)
          <tr wire:key="{{ $message['message_identifier'] }}">
-             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white text-sm">
+             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
                  {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
              </td>
              {{-- /date --}}
-             <td class="w-1/2 px-5 py-5 border-b border-gray-200 bg-white text-sm">
+             <td class="w-1/2 px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
                  <p>
                      {{ $message['subject'] }}
                  </p>
@@ -36,7 +36,7 @@
 
              </td>
              {{-- /subject  --}}
-             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+             <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm text-center">
 
                  <button type="button" popoveraction="show" popovertarget="info-{{$message['id']}}">
                      <i class="bi bi-info-circle"></i>
@@ -59,165 +59,52 @@
              </td>
              {{-- /sender details --}}
 
-             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+             <td class="px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
 
-                 <div class="flex justify-center items-center gap-1">
 
-                     <button
-                         title="Process message"
-                         class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                         wire:click="processMessage('{{ $message['message_identifier'] }}')"
-                         wire:loading.attr="disabled"
+
+                 <button
+                     title="Process message"
+                     class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
+                     wire:click="processMessage('{{ $message['message_identifier'] }}')"
+                     wire:loading.attr="disabled"
+                     wire:target="processMessage('{{ $message['message_identifier'] }}')"
+                     wire:loading.class="opacity-50 cursor-not-allowed">
+                     <span wire:loading.remove
+                         wire:target="processMessage('{{ $message['message_identifier'] }}')">
+                         <i class="bi bi-body-text"></i>
+                         <span class="hidden lg:inline uppercase text-xs">
+                             Process
+                         </span>
+                     </span>
+                     <span wire:loading
                          wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                         wire:loading.class="opacity-50 cursor-not-allowed">
-                         <span wire:loading.remove
-                             wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                             <i class="bi bi-body-text"></i>
-                             <span class="hidden lg:inline uppercase text-xs">
-                                 Process
-                             </span>
-                         </span>
-                         <span wire:loading
-                             wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                             class="absolute left-0 right-0 mx-auto">
-                             <svg class="animate-spin h-5 w-5 mr-3"
-                                 xmlns="http://www.w3.org/2000/svg" fill="none"
-                                 viewBox="0 0 24 24">
-                                 <circle class="opacity-25" cx="12" cy="12" r="10"
-                                     stroke="currentColor" strokeWidth="4"></circle>
-                                 <path class="opacity-75" fill="currentColor"
-                                     d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
-                                 </path>
-                             </svg>
-                         </span>
-                         <span class="text-xs uppercase" wire:loading
-                             wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                             In progress
-                         </span>
-                     </button>
-                     {{-- /Process message button --}}
+                         class="absolute left-0 right-0 mx-auto">
+                         <svg class="animate-spin h-5 w-5 mr-3"
+                             xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 24 24">
+                             <circle class="opacity-25" cx="12" cy="12" r="10"
+                                 stroke="currentColor" strokeWidth="4"></circle>
+                             <path class="opacity-75" fill="currentColor"
+                                 d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
+                             </path>
+                         </svg>
+                     </span>
+                     <span class="text-xs uppercase" wire:loading
+                         wire:target="processMessage('{{ $message['message_identifier'] }}')">
+                         In progress
+                     </span>
+                 </button>
+                 {{-- /Process message button --}}
 
-
-                     <button
-                         popovertarget="message-popover-{{ $index }}"
-                         class="px-4 py-2 rounded-lg {{$message['content'] ? 'border border-green-600 bg-green-300 text-green-950' : 'bg-gray-200 text-gray-600'}}  hover:bg-dark-950 focus:outline-none focus:shadow-outline">
-                         <i class="bi bi-arrows-angle-expand"></i>
-
-                         <span class="hidden lg:inline">
-                             Open
-                         </span>
-                     </button>
-                 </div>
-
-
-                 <dialog popover id="message-popover-{{ $index }}"
-                     class="max-w-7xl m-auto bg-white p-6 rounded-lg shadow-xl">
-
-
-                     <header class="modal-header flex justify-between items-center">
-                         <button
-                             class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
-                             wire:click="processMessage('{{ $message['message_identifier'] }}')"
-                             wire:loading.attr="disabled"
-                             wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                             wire:loading.class="opacity-50 cursor-not-allowed">
-                             <span wire:loading.remove
-                                 wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                                 Process Message
-                             </span>
-                             <span wire:loading
-                                 wire:target="processMessage('{{ $message['message_identifier'] }}')"
-                                 class="absolute left-0 right-0 mx-auto">
-                                 <svg class="animate-spin h-5 w-5 mr-3"
-                                     xmlns="http://www.w3.org/2000/svg" fill="none"
-                                     viewBox="0 0 24 24">
-                                     <circle class="opacity-25" cx="12" cy="12" r="10"
-                                         stroke="currentColor" strokeWidth="4"></circle>
-                                     <path class="opacity-75" fill="currentColor"
-                                         d="M4 12a8 8 0 01.33-2.217l1.745 1.036A6 6 0 006 12h-2z">
-                                     </path>
-                                 </svg>
-                             </span>
-                             <span wire:loading
-                                 wire:target="processMessage('{{ $message['message_identifier'] }}')">
-                                 In progress
-                             </span>
-                         </button>
-                         {{-- /Process message button --}}
-
-                         <button popovertarget="message-popover-{{ $index }}"
-                             popovertargetaction="hide"
-                             class="px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline">
-                             Close
-                         </button>
-
-                     </header>
-                     {{-- /.modal-header --}}
-
-                     @if ($fetching == true)
-                     <div>LOADING MESSAGE...</div>
-                     @endif
-
-                     @if (array_key_exists($message['message_identifier'], $reply))
-
-                     <div wire:key="message-{{ now()->timestamp }}" class="mt-4">
-                         @livewire(
-                         'ai-reply.reply-form-component',
-                         [
-                         'reply' => $reply[$message['message_identifier']],
-                         'message' => $message,
-                         ],
-                         key(now()->timestamp)
-                         )
-
-                         {{-- /Livewire ai-reply.reply-form-component --}}
-                     </div>
-                     @endif
-
-
-                     @include('partials.processing-messages')
-
-
-                     <div class="metadata py-4">
-                         <p class="text-gray-900 leading-none">
-                             Message ID: {{ $message['message_identifier'] }}
-                         </p>
-                         <p class="text-gray-600">
-                             Sender: {{ $message['sender'] }}
-                         </p>
-                     </div>
-                     {{-- /.metadata --}}
-
-
-                     <div class="received-message mt-4">
-                         <h3 class="text-lg font-semibold">Original</h3>
-                         <div class="mt-2 text-gray-800 text-sm" class="text-gray-800">
-                             <!-- Blade Template -->
-                             @php
-                             $message_identifier =
-                             'emailIframe-' . md5($message['message_identifier']);
-                             @endphp
-                             <div class="overflow-y-auto h-32"
-                                 id="wrapper-{{ $message_identifier }}">
-                                 {{ $message['content'] }}
-                             </div>
-
-                         </div>
-                     </div>
-                     {{-- /.received-message --}}
-
-
-                 </dialog>
-
-
-
+                 @include('partials.message.dialog-modal')
 
              </td>
          </tr>
          @empty
          <tr>
              <td colspan="5"
-                 class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                 class="px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 text-sm text-center">
                  <button class="bg-gray-900 text-white p-2 hover:bg-gray-700 rounded hover:shadow"
                      wire:click="$dispatch('sync-mailbox')" wire:loading.attr="disabled">
                      <div class="mx-auto flex gap-2 items-center" wire:loading.remove>
@@ -238,7 +125,7 @@
          @endforelse
      </tbody>
 
-     <tfoot class="py-3 text-gray-900">
+     <tfoot class="py-3 text-gray-900 dark:text-slate-400">
          <tr>
              <td colspan="3" class="text-center py-3">
                  <button type="button" wire:click="loadMore()" wire:loading.attr="disabled">

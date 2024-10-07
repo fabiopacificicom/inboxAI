@@ -1,7 +1,7 @@
-<div id="reply-area" class="p-4 bg-white shadow-md rounded-lg" wire:key="{{ now()->timestamp }}">
+<div id="reply-area" class="p-4 bg-white dark:bg-slate-900 shadow-md rounded-lg" wire:key="{{ now()->timestamp }}">
 
     @if (session('reply-generated'))
-    <div class="text-gray-700">{{ session('reply-generated') }}</span>
+    <div class="text-gray-700 dark:text-slate-400">{{ session('reply-generated') }}</span>
         @endif
 
         {{-- Reply form --}}
@@ -10,7 +10,7 @@
             <div class=" reply my-4">
 
                 <textarea
-                    class="w-full rounded-lg p-3 border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 ease-in-out"
+                    class="w-full rounded-lg p-3 border border-gray-300 dark:bg-slate-800 dark:text-slate-300 focus:border-blue-500 focus:ring focus:ring-blue-200 dark:focus:ring-slate-600 transition duration-200 ease-in-out"
                     name="reply" id="reply" rows="10" wire:model.live="content"></textarea>
                 @error('content')
                 <div class="text-red">{{ $message }}</div>
@@ -21,7 +21,7 @@
                     Reply
                 </button>
                 @if (session('reply-sent'))
-                <span class="text-gray-700">{{ session('reply-sent') }}</span>
+                <span class="text-gray-700 dark:text-slate-400">{{ session('reply-sent') }}</span>
                 @endif
             </div>
         </form>
