@@ -14,11 +14,13 @@
 
     <header class="modal-header relative">
 
-        <h3 class="text-slate-800 dark:text-slate-600 text-md uppercase">Message card</h3>
+        <h3 class="text-slate-800 dark:text-slate-600 text-md uppercase">
+            Message card
+        </h3>
 
         <button popovertarget="message-popover-{{ $index }}"
             popovertargetaction="hide"
-            class=" absolute end-2 top-2 px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline">
+            class=" absolute end-2 top-2 px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 focus:outline-none focus:shadow-outline">
             <i class="bi bi-x"></i>
         </button>
 
@@ -27,9 +29,6 @@
     </header>
     {{-- /.modal-header --}}
 
-    @if ($fetching == true)
-    <div>LOADING MESSAGE...</div>
-    @endif
 
     @if (array_key_exists($message['message_identifier'], $reply))
 
@@ -43,9 +42,9 @@
         key(now()->timestamp)
         )
 
-        {{-- /Livewire ai-reply.reply-form-component --}}
     </div>
     @endif
+    {{-- /Livewire ai-reply.reply-form-component --}}
 
 
     @include('partials.processing-messages')
