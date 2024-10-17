@@ -14,8 +14,8 @@ use Livewire\Component;
 class ReplyFormComponent extends Component
 {
 
-    #[Reactive]
-    public $reply;
+    //#[Reactive]
+    public $reply = [];
 
     #[Validate('required|min:5')]
     public $content;
@@ -25,18 +25,33 @@ class ReplyFormComponent extends Component
     protected $rules = [
         'reply' => 'required',
     ];
-    public function mount($reply, $message)
+    public function mount($message)
     {
-        $this->reply = $reply;
-        //dd($reply);
-        $messageContent = json_decode($reply['message']['content'], true);
-        if (array_key_exists('reply', $messageContent)) {
-            $this->content = $messageContent['reply'];
-        }
+        //dd($message);
         $this->message = $message;
     }
 
 
+    #[On('set-reply')]
+    public function setReply($reply)
+    {
+        //dd($reply);
+        //dd($this->message->replies);
+        $this->reply = $reply;
+        //dd($this->reply);
+        $messageContent = json_decode($reply, true);
+        if (array_key_exists('reply', $messageContent)) {
+            $this->content = $messageContent['reply'];
+        }
+        $this->reply = $reply;
+    }
+
+    #[On('set-content')]
+    public function setContent($content)
+    {
+        //dd($content);
+        $this->content = $content;
+    }
 
     public function updatedContent($value)
     {

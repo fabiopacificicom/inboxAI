@@ -200,91 +200,89 @@ trait HasMailboxConnection
     {
         //dd($mailbox, $mailsIds);
 
+        Cache::forget('messages');
         if (!$mailsIds) {
             //dd('here');
             Log::info('Mailbox is empty');
+            return back()->with('message', "The Mailbox:  is empty.");
+        } else {
 
-            return to_route('dashboard')->with('message', 'Mailbox is empty');
-        }
-        // Put the latest email on top of listing
-        rsort($mailsIds);
-        // Get the last 15 emails only (@todo make this dynamic)
-        array_splice($mailsIds, $limit);
-
-        //dd($mailsIds);
-        // Loop through emails one by one
-        Cache::forget('messages');
-
-        Cache::remember('messages', now()->addDay(), function () use ($mailsIds, $mailbox) {
+            // Put the latest email on top of listing
+            rsort($mailsIds);
+            // Get the last 15 emails only (@todo make this dynamic)
+            array_splice($mailsIds, $limit);
             //dd($mailsIds);
-            return array_map(function ($num) use ($mailbox) {
 
-                // TODO: Performance improvements:
-                // Update the implementation and start by just fetching the message headers
-                // and then fetch the body when user clicks on the message.
-                $mail = $mailbox->getMailHeader($num);
-                //dd($head->id, $head->subject);
+            // Loop through emails one by one
+            Cache::remember('messages', now()->addDay(), function () use ($mailsIds, $mailbox) {
+                //dd($mailsIds);
+                return array_map(function ($num) use ($mailbox) {
 
-                //$markAsSeen = true;
-                //$mail = $mailbox->getMail($num, $markAsSeen);
-                //dd($num, $mail->mailboxFolder);
+                    // TODO: Performance improvements:
+                    // Update the implementation and start by just fetching the message headers
+                    // and then fetch the body when user clicks on the message.
+                    $mail = $mailbox->getMailHeader($num);
+                    //dd($mail);
+                    //dd($head->id, $head->subject);
 
-
-                $date = $this->normalizeDate($mail->date);
-
-
-                $message = [
-                    'message_identifier' => $mail->id,
-                    'is_seen' => $mail->isSeen,
-                    'is_answered' => $mail->isAnswered,
-                    'is_recent' => $mail->isRecent,
-                    'is_flagged' => $mail->isFlagged,
-                    'is_deleted' => $mail->isDeleted,
-                    'is_draft' => $mail->isDraft,
-                    'subject' => $mail->subject,
-                    'from' => $mail->fromAddress,
-                    'sender' => isset($mail->fromName) ? $mail->fromName : '',
-                    'reply_to_addresses' => array_keys($mail->replyTo),
-                    'date' => $date ?? '',
-                    /* 'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),*/
-                    'mailbox_folder' => $mail->mailboxFolder
-                    // Add more fields as needed
-                ];
-                //dd($message);
-
-                //dd($message['message_identifier'], $message);
-
-                $messageObject = Message::updateOrCreate(['message_identifier' => $mail->id], [
-                    'message_identifier' => $message['message_identifier'],
-                    'subject' => $message['subject'],
-                    'from' =>  $message['from'],
-                    'sender' => $message['sender'],
-                    'reply_to_addresses'  => $message['reply_to_addresses'],
-                    'date' => $message['date'],
-                    'content' => $message['content'] ?? '',
-                    'is_seen' => $message['is_seen'],
-                    'is_answered' => $message['is_answered'],
-                    'is_recent' => $message['is_recent'],
-                    'is_flagged' => $message['is_flagged'],
-                    'is_deleted' => $message['is_deleted'],
-                    'is_draft' => $message['is_draft'],
-                    'mailbox_folder' => $message['mailbox_folder']
-
-                ]);
-                //dd($messageObject);
+                    //$markAsSeen = true;
+                    //$mail = $mailbox->getMail($num, $markAsSeen);
+                    //dd($num, $mail->mailboxFolder);
 
 
-                return $messageObject;
-            }, $mailsIds);
+                    $date = $this->normalizeDate($mail->date);
+
+
+                    $message = [
+                        'message_identifier' => $mail->id,
+                        'is_seen' => $mail->isSeen,
+                        'is_answered' => $mail->isAnswered,
+                        'is_recent' => $mail->isRecent,
+                        'is_flagged' => $mail->isFlagged,
+                        'is_deleted' => $mail->isDeleted,
+                        'is_draft' => $mail->isDraft,
+                        'subject' => $mail->subject,
+                        'from' => $mail->fromAddress,
+                        'sender' => isset($mail->fromName) ? $mail->fromName : '',
+                        'reply_to_addresses' => array_keys($mail->replyTo),
+                        'date' => $date ?? '',
+                        /* 'content' => str_replace(["\t", "\r", "\n"], "", trim($mail->textPlain)),*/
+                        'mailbox_folder' => $mail->mailboxFolder
+                        // Add more fields as needed
+                    ];
+                    //dd($message);
+
+                    //dd($message['message_identifier'], $message);
+
+                    $messageObject = Message::updateOrCreate(['message_identifier' => $mail->id], [
+                        'message_identifier' => intval($message['message_identifier']),
+                        'subject' => $message['subject'],
+                        'from' =>  $message['from'],
+                        'sender' => $message['sender'],
+                        'reply_to_addresses'  => $message['reply_to_addresses'],
+                        'date' => $message['date'],
+                        'content' => $message['content'] ?? '',
+                        'is_seen' => $message['is_seen'],
+                        'is_answered' => $message['is_answered'],
+                        'is_recent' => $message['is_recent'],
+                        'is_flagged' => $message['is_flagged'],
+                        'is_deleted' => $message['is_deleted'],
+                        'is_draft' => $message['is_draft'],
+                        'mailbox_folder' => $message['mailbox_folder']
+
+                    ]);
+                    //dd($messageObject);
+
+
+                    return $messageObject;
+                }, $mailsIds);
+                //dd($messages);
+            });
+
             //dd($messages);
-        });
 
-
-
-        //dd($messages);
-
-
-        $this->dispatch('mailbox-sync-event')->to(MessageListComponent::class);
+            $this->dispatch('mailbox-sync-event')->to(MessageListComponent::class);
+        }
     }
 
     private function handleConnectionException($ex)

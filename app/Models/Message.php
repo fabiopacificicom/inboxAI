@@ -34,4 +34,9 @@ class Message extends Model
             'reply_to_addresses' => 'array'
         ];
     }
+
+    public function replies()
+    {
+        return $this->hasMany(Reply::class);
+    }
 }

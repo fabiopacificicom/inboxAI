@@ -11,6 +11,7 @@ use App\Traits\Processable;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 use App\Traits\Helpers;
+use App\Models\Reply;
 
 class MessageListComponent extends Component
 {
@@ -37,8 +38,7 @@ class MessageListComponent extends Component
         });
 
         // Remove old messages
-        $this->removeOlderMessages();
-
+        //$this->removeOlderMessages();
         // update the settings
         //dd($settings);
         $this->settings = $settings;
@@ -49,7 +49,7 @@ class MessageListComponent extends Component
         //dd(Cache::get('messages'));
         $this->messages = Cache::get('messages') ?? $this->retreiveLatestMessages();
         //dd('here');
-        Log::info('MessageListComponent Mounted with ' . $this->messages->count() . ' messages.');
+        //Log::info('MessageListComponent Mounted with ' . $this->messages->count() . ' messages.');
     }
 
     /**
@@ -74,6 +74,13 @@ class MessageListComponent extends Component
             Setting::updateOrCreate(['key' => $name], ['value' => $value]);
             $this->dispatch('sync-mailbox')->to(MailboxConnectionComponent::class);
         }
+    }
+
+
+
+    public function setReplyContent($content)
+    {
+        $this->dispatch('set-content', addslashes($content))->to(ReplyFormComponent::class);
     }
 
 
@@ -157,7 +164,23 @@ class MessageListComponent extends Component
         //dd($category, $action, $instructions); */
 
         // 4. Perform the actions on the message based on the action
-        $this->performActions($action, $instructions, $messageId, $this->settings);
+        $reply = $this->performActions($action, $instructions, $messageId, $this->settings);
+        //$this->dispatch('set-reply', ['messageId' => $messageId, 'reply' => $this->reply[$messageId]])->to(ReplyFormComponent::class);
+        //dd($reply, $messageId);
+        //dd($this->message, $instructions);
+        $message_content = 'Subject:' . $this->message['subject'] . '. Body: ' . $this->message['content'];
+        //dd($this->message, $message_content);
+        //dd(json_decode($reply, true));
+        $data =  [
+            'message_identifier' => $messageId,
+            'message_content' => $message_content,
+            'response_content' => trim(json_decode($reply, true)['reply'])
+        ];
+
+        //dd($data);
+        $this->message->replies()->create($data);
+        $this->dispatch('set-reply', $reply)->to(ReplyFormComponent::class);
+        Log::info("reply created for message $messageId");
     }
 
 
@@ -253,7 +276,7 @@ class MessageListComponent extends Component
     private function retreiveLatestMessages()
     {
         $limit = $this->settings['limit'] ?? 20;
-        $messages = Message::orderByDesc('date')->take($limit)->get();
+        $messages = Message::with('replies')->orderByDesc('date')->take($limit)->get();
         //dd($messages);
         // Update the cache with the retrieved and limited messages
         Cache::forever('messages', $messages);
@@ -282,7 +305,7 @@ class MessageListComponent extends Component
         //dd($timestamp);
 
         // Delete any messages that are older than the calculated timestamp
-        Message::where('date', '<=', $timestamp)->take($this->limit)->delete();
+        Message::with('replies')->where('date', '<=', $timestamp)->take($this->limit)->forceDelete();
         // Clean the cached messages
         Cache::forget('messages');
     }

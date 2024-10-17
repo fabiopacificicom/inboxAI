@@ -4,16 +4,18 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
+use App\Models\Url;
 use App\Traits\HandleAiResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpImap\Imap;
+use App\Traits\Helpers;
 use App\Traits\HasMailboxConnection;
 
 trait Processable
 {
-    use HandleAiResponse, HasMailboxConnection;
+    use HandleAiResponse, HasMailboxConnection, Helpers;
     public $message;
     public $messages;
     public $reply = [];
@@ -37,16 +39,14 @@ trait Processable
 
         // if is an array
         if (is_array($this->messages)) {
-            $this->message =   [...array_filter($this->messages, fn($message) => $id === $message['message_identifier'])][0];
+            $this->message =   [...array_filter($this->messages, fn($message) => $id == $message['message_identifier'])][0];
         } else {
             // is a collection
-            $this->message = $this->messages->filter(fn($message) => $id === $message['message_identifier'])->first();
+            $this->message = $this->messages->filter(fn($message) => $id == $message['message_identifier'])->first();
         }
 
-
-
         //dd($this->message);
-        Log::info('1️⃣SetMessage -> Message ID: ' . $id, ['message' => $this->message]);
+        Log::info('1️⃣SetMessage -> Message ID: ' . $id, ['message' => $this->message['subject']]);
         return $this->message;
     }
 
@@ -75,35 +75,95 @@ trait Processable
                 ],
                 [
                     'role' => 'user',
-                    'content' => 'Classify the following message resource: ' . json_encode($message)
+                    'content' => 'Sender: ' . $message['sender'] . 'Subject: ' . $message['subject'] . ' Content:' . $this->convertHtmlToPlainText($message['content']),
+                ]
+            ],
+            'tools' => [
+                [
+                    'type' => 'function',
+                    'function' => [
+                        'name' => 'classify',
+                        'description' => 'classify the given message IMAP resource',
+                        'parameters' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'category' => [
+                                    'type' => 'string',
+                                    'description' => 'the category where place the classified messge'
+                                ],
+                                'action' => [
+                                    'type' => 'boolean',
+                                    'description' => 'true if an action is required',
+                                ],
+                                'instructions' => [
+                                    'type' => 'array',
+                                    'description' => 'the instructions to be followed',
+                                ]
+                            ]
+                        ],
+                        'required' => ['category', 'action', 'instructions']
+                    ]
                 ]
             ]
         ];
+        //dd($payload);
+
         // handle the response
-        Log::info('2️⃣Classification Payload: ', ['payload' => $payload]);
+        // {\"category\": \"inbox\", \"action\": true, \"instructions\": [\"generateReply\", \"insertEvent\"]}
+        Log::info('2️⃣Classification Payload ready', ['payload' => $payload]);
         try {
 
             $resp = $this->getResponse($payload);
         } catch (\Throwable $th) {
-            session()->flash('message', $th->getMessage());
             Log::error($th->getMessage());
+            return $th->getMessage();
         }
 
-        //dd($resp);
-        $content = json_decode($resp['message']['content'], true);
-        if (!$content || !array_key_exists('category', $content) && !array_key_exists('action', $content) && !array_key_exists('instructions', $content)) {
-            $this->processingMessages[] = ['❌' => 'Classification failed, try again later.'];
+        // 📌 NOTE: If the model does not support function calling the classification will always fail.
+        // call the categorizer tools
+        $classificationResponse =  $this->callTheClassificationToolIfSupported($resp, $message['id']);
+
+        if ($classificationResponse === false) {
             Log::error('❌CLASSIFICATION - The AI model generated an incorrect response, see the response below.', $resp);
-
-            return false;
+            $this->processingMessages[] = ['❌' => 'Classification failed, try again later.'];
+            return [false, $resp['message']['content']];
         }
-        $this->processingMessages[] = ['✅' => 'Message classified successfully'];
-        Log::info('✅CLASSIFICATION COMPLETE.', ['classification_response' => $resp]);
-        return $resp;
+        return $classificationResponse;
     }
 
+
+
     /**
-     * Extract the data from the provided response
+     * Call the categorizer tools
+     * @param array $resp
+     * @return array || false
+     */
+    private function callTheClassificationToolIfSupported($resp, $messageId)
+    {
+
+        $tools = $resp['message']['tool_calls'] ?? null;
+        if ($tools && strtolower($tools[0]['function']['name']) === 'classify') {
+
+            $action = $tools[0]['function']['arguments']['action'];
+            $instructions = $tools[0]['function']['arguments']['instructions'];
+            $category = $tools[0]['function']['arguments']['category'];
+
+            $this->processingMessages[] = ['✅' => 'Message classified successfully'];
+            Log::info("Category: $category");
+            $this->categorizeMessage($messageId, $category);
+            Log::info('✅CLASSIFICATION COMPLETE.');
+            return [$action, $instructions];
+        }
+        return false;
+    }
+
+
+
+
+    /**
+     * Extract the data from the provided response.
+     * This is useful with models that do not support function calling
+     * and could use this to extract from the provided response the necessary valiables
      * @param $response
      * @return array The data extracted from the response [category, action, instructions]
      */
@@ -135,9 +195,9 @@ trait Processable
      * @param $category the category to move it into
      * @return void
      */
-    public function categorizeMessage($id, $category)
+    private function categorizeMessage($id, $category)
     {
-        $this->processingMessages[] = ["✅" => "Categorising message"];
+        $this->processingMessages[] = ["✅" => "Categorising message on $category"];
         if (strtolower($category) === 'inbox') return;
 
 
@@ -150,6 +210,10 @@ trait Processable
 
         // get the first mailbox that matches the category
         $mailboxPath = $this->findMailboxMatching($mailBoxes, $category);
+        if (!$mailboxPath) {
+            $mailbox->createMailbox('INBOX' . $category);
+            $mailboxPath = 'INBOX' . $category;
+        }
 
         //dd([...$mailboxCategory]);
         $mailbox->moveMail($id, $mailboxPath);
@@ -168,45 +232,53 @@ trait Processable
      * @param $category
      * @return void
      */
-    private function performActions($action, $instructions, $messageId, $category = null, $settings = null)
+    private function performActions($action, $instructions, $messageId, $settings = null)
     {
+        /*  //dd($action, $instructions, $messageId, $settings);
         if (!$action) {
             return back()->with('reply-generated', 'No action required.');
-        }
-        Log::info('4️⃣ performActions', ['instructions' => $instructions, 'action' => $action, 'category' => $category, $messageId => $this->message]);
+        } */
+        Log::info('4️⃣ performActions', ['instructions' => $instructions, 'action' => $action, $messageId => $this->message]);
 
-
-        $this->categorizeMessage($messageId, $category, $settings);
-        $this->processingMessages[] = ["✅" => "Message Categorized: $category"];
         // Generate a reply for the given message
-
         $this->reply[$messageId] = $this->generateReply($instructions);
         $this->processingMessages[] = ["✅" => "Reply generated"];
 
         //dd($this->reply[$messageId]);
-        Log::info('👉Reply', ['reply' => $this->reply[$messageId]]);
+        Log::info('👉Reply', ['reply' => $this->reply[$messageId]['message']['content']]);
 
 
         // TODO:
         // Refactor the method below
+        //dd(trim($this->reply[$messageId]));
         $this->addCalendarEntryIfRequired($messageId, $instructions, $this->reply[$messageId]['message']['content']);
+
+        return $this->reply[$messageId]['message']['content'];
     }
 
 
     public function addCalendarEntryIfRequired($messageId, $instructions, $replyMessageContent)
     {
-        //dd(json_decode($replyMessageContent, true));
-        Log::info('📅 addCalendarEntryIfRequired', ['messageId' => $messageId,'replyMessageContent' => $replyMessageContent]);
-        if (
-            array_key_exists('event', json_decode($replyMessageContent, true)) &&
-            json_decode($replyMessageContent, true)['event'] == true &&
-            ($instructions == 'insertEvent' || is_array($instructions) && in_array('insertEvent', $instructions))
+        //dd($instructions, $replyMessageContent);
+        $decoded = json_decode($replyMessageContent, true);
+        $originalMessage = \App\Models\Message::where('message_identifier', $messageId)->first()?->toArray();
+        //dd($instructions, $decoded, \App\Models\Message::where('message_identifier', $messageId)->first()->toArray());
 
-        ) {
+        if ($instructions === 'insertEvent' || (is_array($instructions) && in_array('insertEvent', $instructions))) {
+
+
+            //dd($decoded);
+            $expected = config('responder.assistant.json_formats.withEvent');
+            //dd($expected);
+            $reviewResponse = $this->aiReviewResponse($decoded, $expected);
+            //dd('Instructions', $instructions, 'Original Message', $originalMessage, 'Response: ', $decoded, 'Review: ', $reviewResponse);
+
+
+            Log::info('📅 addCalendarEntryIfRequired', ['messageId' => $messageId, 'replyMessageContent' => $reviewResponse]);
 
             // get the requested datees fro mteh reply
-            $startDateTime = Carbon::parse(json_decode($replyMessageContent, true)['event']['start']['dateTime']);
-            $endDateTime = Carbon::parse(json_decode($replyMessageContent, true)['event']['end']['dateTime']);
+            $startDateTime =   $reviewResponse['event'] ? Carbon::parse($reviewResponse['event']['start']['dateTime']) : now();
+            $endDateTime = $reviewResponse['event'] ? Carbon::parse($reviewResponse['event']['end']['dateTime']) : now()->addHour();
 
             // check calendar availability
             $is_available = $this->checkCalendarAvailability($startDateTime, $endDateTime);
@@ -215,7 +287,7 @@ trait Processable
             //dd($is_available);
             // schedule the appointment if available or propose a different date/time
             if ($is_available) {
-                $this->updateCalendar($messageId, $this->reply[$messageId]);
+                $this->updateCalendar($messageId, $reviewResponse);
             }
 
             $this->processingMessages[] = ["✅" => "Calendar Event added"];
@@ -223,7 +295,47 @@ trait Processable
     }
 
 
+    /**
+     * @param string $output the json output provided by the model
+     * @param string $expectedOutputFormat the expected format of the output
+     * @return array the decoded output in the expected format or false if not necesssary
+     */
+    public function aiReviewResponse($output, $expectedOutputFormat, $options = [])
+    {
 
+        $system = "Your task is to make sure the response contains the same keys defined in the expectedOutputFormat.\n
+                    This task is critical for the success of the program so use the following reasoning process to generate your final answer. 1. Read the provided response enclosed within the response tags. 2. Read the expected output provided within the expectedOutputFormat tags. 3. Think if the response meets the expected format. Reflect about where the problem is. 4. Find the solution. 5. Reflect to check if the solution found is correct before providing your final answer. 6. Return your final answer to the user as JSON format. Don't show your reasoning process to the user and don't use it in your final answer.";
+        $prompt = "
+            Please check if the provided response below has the same keys expected in the expectedOutputFormat. If not fix it.
+            Return your final response as json.
+            <response>" .
+            json_encode($output) .
+            "</response> " .
+            '<expectedOutputFormat>' .
+            json_encode($expectedOutputFormat) .
+            '</expectedOutputFormat>';
+
+        $payload = [
+
+            "model" => config('responder.assistant.model'),
+            "stream" => false,
+            'format' => 'json',
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => $system,
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
+            ],
+            ...$options
+        ];
+
+        //dd($payload);
+        return json_decode($this->getResponse($payload)['message']['content'], true);
+    }
 
 
 
@@ -231,12 +343,12 @@ trait Processable
      * Generate a reply for the given message
      * @param $messageId
      * @param $instructions
-     * @return void
+     * @return string
      */
     private function generateReply($instructions)
     {
         Log::info('5️⃣ Generate a reply...');
-        //dd($messageId, $instructions);
+        //dd($instructions);
         //dd('reply to the message', $this->message);
         // prepare the payload to process the selected message
         $payload = $this->preparePayloadFrom($instructions);
@@ -244,18 +356,25 @@ trait Processable
         // Use the payload to generate a response
         try {
             $response = $this->getResponse($payload); // Get the response
+            //dd($response);
             $this->processingMessages[] = ["✅" => 'The reply was generated successfully'];
         } catch (\Throwable $th) {
             //throw $th;
             return back()->with('reply-generated', 'Error: Reply Not generated successfully');
         }
+        //dd($instructions, $payload, $response);
         // inform the user that the generation was completed
-        Log::info('✅Reply generated', ['reply' => $response]);
+        Log::info('🤖 Reply generated', ['reply' => $response]);
         return $response;
     }
 
 
     /**
+     * TODO: EXPERIMENTAL - in progress: The knowledge base is injected
+     * into the system for the generation of replies as is but it can grow and it is not
+     * going to efficient because it could grow and make the model reach its token limits.
+     * This should be refactored to a more solid solution maybe using RAG techniques.
+     *
      * get the payload for the ollama api request
      *
      * @param $instructions
@@ -266,7 +385,12 @@ trait Processable
 
         if (is_array($instructions)) $instructions = join(',', $instructions);
         // if ($instructions) $message = ['role'=> 'user', 'content'=> "Instructions: $instructions"];
-        //dd($instructions, $this->message);
+
+
+        // experiment: inject the knowledge base into the payload
+        $knowledgeBase = Url::get(['url', 'content'])->toJson();
+
+        //dd($instructions, $this->message, $knowledgeBase);
         return [
             'model' => Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model'),
             'stream' => false,
@@ -275,11 +399,38 @@ trait Processable
 
                 [
                     'role' => 'system',
-                    'content' => Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system')
+                    'content' => (htmlentities(Setting::where('key', 'assistantSystem')->first()?->value) ?? config('responder.assistant.system')) . "
+                    ## Output format:
+                    You must return your final response as JSON object, with the following keys:
+                        - 'reply': string, the generated reply as text.
+                        - 'event': false or the event object representation as described below under the ## example request section. " .
+                        "
+                    ## Available tools
+                    To assist me better you can use the tools listed below delimited within '[tools][/tools]'.
+
+                    [tools]
+                    - 1. summarization
+                    Create summaries of newsletters of similar emails to facilitate the user content's assimilation.
+                    - 2. insert calendar events
+                    - 3. knowledge base
+                    [/tools]
+
+
+                    When you process an email message, read the conversation, step back and think. Reflect to find out if it is necessary to check my calendar to verify the presence of an existing event or insert a new one. You can add events to the calendar for appointments, meetings, urgent tasks and other things that might need to be calendarized for me.
+
+                    When you want to insert something into the calendar, you must format the response as json with also the \"event\" key.  The 'event' key can be false (when you don't want to add a calendar entry) or JSON representation of an event:
+                        " . config('responder.assistant.tools.google.eventOutputFormat') .
+                        "To improve your responses you can access the knowledge below." . "<knowledgeBase>" .
+                        implode(' ',  Arr::flatten(json_decode($knowledgeBase, true))) .
+                        "</knowledgeBase>"
+
                 ],
                 [
                     'role' => 'user',
-                    'content' => json_encode($this->message) . ' Action to take: ' . $instructions
+                    'content' => json_encode($this->message) . "## Output format:
+                    You must return your final response as JSON object, with the following keys:
+                        - 'reply': a string containing the generated reply for the provided message.
+                        - 'event': false or the event object representation as described below under the ## example request section. " . 'Action to take: ' . $instructions
                 ]
             ]
         ];
