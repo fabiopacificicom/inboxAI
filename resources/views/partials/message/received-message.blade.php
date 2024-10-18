@@ -1,8 +1,9 @@
  <div class="received-message mt-4">
-     @if(!$message['content'])
+     @if($message?->content && !$message['content'])
      {{ __('Process the message first to see its content')}}
-     @else
+     @endif
 
+     @if($message)
      <h3 class="text-md font-semibold text-gray-800 dark:text-slate-600 uppercase">{{__('Content')}}</h3>
      <div class="mt-2 text-sm">
          <!-- Blade Template -->

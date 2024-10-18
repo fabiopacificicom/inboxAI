@@ -2,6 +2,7 @@
 
 namespace App\Livewire\AiReply;
 
+use App\Livewire\MessageCardDialog;
 use App\Models\Message;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
@@ -78,10 +79,11 @@ class MessageListComponent extends Component
 
 
 
-    public function setReplyContent($content)
+    /* public function setReplyContent($content)
     {
+        dd($content);
         $this->dispatch('set-content', addslashes($content))->to(ReplyFormComponent::class);
-    }
+    } */
 
 
     public function loadMore()
@@ -106,7 +108,11 @@ class MessageListComponent extends Component
      */
     public function fetchMessage($id): void
     {
-        //dd($id);
+
+        $this->dispatch('fetch-message', $id)->to(MessageCardDialog::class);
+
+
+        /*   //dd($id);
         //$this->loading = true;
         // get the message from the imap server
         $imapMailbox = $this->makeMailboxFromSettings(inbox: $this->selectedMailbox);
@@ -129,7 +135,7 @@ class MessageListComponent extends Component
         $message->update(['content' => ($content)]);
 
         // update the messages collection
-        $this->messages = Cache::get('messages', $this->retreiveLatestMessages());
+        $this->messages = Cache::get('messages', $this->retreiveLatestMessages());*/
     }
 
 

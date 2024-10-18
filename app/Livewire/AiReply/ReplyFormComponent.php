@@ -10,6 +10,8 @@ use Livewire\Attributes\Reactive;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use App\Models\Message;
+use App\Models\Reply;
 
 class ReplyFormComponent extends Component
 {
@@ -27,8 +29,10 @@ class ReplyFormComponent extends Component
     ];
     public function mount($message)
     {
-        //dd($message);
+
         $this->message = $message;
+        //Log::info('Reply Form, id:' . $message->id, ['message' => $this->message->replies->first()]);
+        $this->content = $this->message?->replies->first()?->response_content;
     }
 
 
@@ -46,11 +50,13 @@ class ReplyFormComponent extends Component
         $this->reply = $reply;
     }
 
-    #[On('set-content')]
-    public function setContent($content)
+    #[On('set-reply-content')]
+    public function setContent($id)
     {
-        //dd($content);
-        $this->content = $content;
+        //dd($id);
+        $reply_content = Reply::find(intval($id))->response_content;
+        //dd($reply_content);
+        $this->content = $reply_content;
     }
 
     public function updatedContent($value)
@@ -61,19 +67,17 @@ class ReplyFormComponent extends Component
 
     public function sendReply()
     {
-        //dd($this->reply);
         $this->validate();
+        //dd($this->content);
 
         //dd($this->content, $this->message, $this->reply);
         // sent the reply email
         Mail::to($this->message->reply_to_addresses)->send(new InboxAiReplyMailable($this->content, $this->message));
         // Dispatch an event to notify other components that a reply has been sent
-        session()->flash('reply-sent', 'Message sent successfully');
-
         // Reset the reply content after sending
         //$this->content = '';
         // return back
-        return back();
+        return back()->with('reply-sent', 'Message sent successfully');
     }
 
 

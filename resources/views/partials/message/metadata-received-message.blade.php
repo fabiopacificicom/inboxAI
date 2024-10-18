@@ -4,7 +4,7 @@
             Message ID:
         </span>
         <strong>
-            {{ $message['message_identifier'] }}
+            {{ $message['message_identifier'] ?? ''}}
         </strong>
     </p>
     <p class="text-gray-900 dark:text-slate-400">
@@ -12,7 +12,7 @@
             Sender:
         </span>
         <strong>
-            {{ $message['sender'] }}
+            {{ $message['sender'] ?? '' }}
         </strong>
     </p>
     <p class="text-gray-900 dark:text-slate-400">
@@ -20,7 +20,7 @@
             From:
         </span>
         <strong>
-            {{ $message['from'] }}
+            {{ $message['from'] ?? '' }}
         </strong>
     </p>
     <p class="text-gray-900 dark:text-slate-400">
@@ -28,7 +28,7 @@
             Reply to:
         </span>
         <strong>
-            {{ implode(',', $message['reply_to_addresses']) }}
+            {{ implode(',', $message['reply_to_addresses'] ?? []) }}
         </strong>
     </p>
     <p class="text-gray-900 dark:text-slate-400">
@@ -36,7 +36,7 @@
             Date:
         </span>
         <strong>
-            {{$message['date']}}
+            {{$message['date'] ?? ''}}
         </strong>
     </p>
 </div>
