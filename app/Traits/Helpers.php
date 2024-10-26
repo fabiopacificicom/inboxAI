@@ -52,7 +52,7 @@ trait Helpers
     /**
      * This is a helper function to convert html content into plain text
      * @param $htmlContent - html content to convert
-     * @return $plainText - plain text content of the html
+     * @return string $plainText - plain text content of the html
      */
     public function convertHtmlToPlainText($htmlContent)
     {
