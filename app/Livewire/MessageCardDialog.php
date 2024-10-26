@@ -22,8 +22,11 @@ class MessageCardDialog extends Component
     public $message;
     public $settings;
     public $id = 'message-card-popover';
-    public function mount()
+    public $processingMessages = [];
+
+    public function mount($id)
     {
+        $this->id = $id;
         $this->settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {
             return [$item['key'] => $item['value']];
         });
@@ -51,7 +54,14 @@ class MessageCardDialog extends Component
     }
 
 
+    #[On('clean-dialog')]
+    public function cleanDialog()
+    {
 
+        $this->processingMessages = [];
+        $this->processingMessages[] = ["🔃" => "Initializing clean dialog state..."];
+        $this->message = null;
+    }
     /**
      * Fetch a message from the imap server and update the corresponding model
      * in the db
@@ -62,16 +72,20 @@ class MessageCardDialog extends Component
     public function fetchMessage($id): void
     {
         $this->processingMessages = [];
+        $this->processingMessages[] = ["✅" => "Fetcing message body..."];
+        Log::info('received a fetch message event triggered for message id: ' . $id);
 
         $this->message = '';
         //dd($id);
         // get the message to fetch
         $this->message = Message::where('message_identifier', $id)->first();
+        $this->processingMessages[] = ["✅" => "Message Identified"];
 
         //dd($this->message);
         //$this->loading = true;
         // get the message from the imap server
         $imapMailbox = $this->makeMailboxFromSettings(inbox: $this->selectedMailbox);
+        $this->processingMessages[] = ["✅" => "Conecting the mailbox"];
 
         $mail = $imapMailbox->getMail($id);
         //dd($mail);
@@ -84,14 +98,15 @@ class MessageCardDialog extends Component
         $cleanedContent =  preg_replace("/[^A-Za-z0-9 ]/", '', $this->convertHtmlToPlainText($content));
         //dd($content);
         $this->fetching = false;
+        $this->processingMessages[] = ["✅" => "Message content downloaded and cleaned"];
 
         // find the mesage from the db
         $message = Message::where('message_identifier', $id)->first();
         //update it
         $message->update(['content' => $cleanedContent]);
-
-        // update the messages collection
-        //$this->messages = Cache::get('messages', $this->retreiveLatestMessages());
+        $this->message = $message;
+        $this->processingMessages[] = ["✅" => "Message update complete"];
+        $this->processMessage($id);
     }
 
 
@@ -115,17 +130,24 @@ class MessageCardDialog extends Component
 
         // 4. Perform the actions on the message based on the action
         $reply = $this->performActions($action, $instructions, $messageId, $this->settings);
-        //dd($reply);
+        Log::info('Reply', ['reply ' => $reply]);
         $message_content = 'Subject:' . $this->message['subject'] . '. Body: ' . $this->message['content'];
 
+
+        //dd($reply);
+        $replyMessageContent = '';
+        if (array_key_exists('reply', json_decode($reply, true))) {
+            $replyMessageContent = trim(json_decode($reply, true)['reply']);
+        }
         $data =  [
             'message_identifier' => $messageId,
             'message_content' => $message_content,
-            'response_content' => trim(json_decode($reply, true)['reply'])
+            'response_content' => $replyMessageContent
         ];
 
 
         $this->message->replies()->create($data);
         Log::info("reply created for message $messageId", ['reply' => $reply]);
+        $this->processingMessages[] = ["📧" => "Message Processing complete"];
     }
 }

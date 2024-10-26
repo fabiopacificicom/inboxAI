@@ -37,7 +37,7 @@ class MessageListComponent extends Component
         $this->mailboxes = Cache::rememberForever('mailboxes', function () use ($mailbox) {
             return $mailbox->getMailboxes();
         });
-
+        //dd($this->mailboxes);
         // Remove old messages
         //$this->removeOlderMessages();
         // update the settings
@@ -96,7 +96,7 @@ class MessageListComponent extends Component
 
     public function refreshMessages()
     {
-        Cache::delete('messages');
+        Cache::purge('messages');
         $this->dispatch('sync-mailbox');
     }
 

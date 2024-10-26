@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use PhpImap\Imap;
 use App\Traits\Helpers;
 use App\Traits\HasMailboxConnection;
+use Livewire\Attributes\Reactive;
 
 trait Processable
 {
@@ -145,8 +146,9 @@ trait Processable
         if ($tools && strtolower($tools[0]['function']['name']) === 'classify') {
 
             $action = $tools[0]['function']['arguments']['action'];
-            $instructions = $tools[0]['function']['arguments']['instructions'];
-            $category = $tools[0]['function']['arguments']['category'];
+            $instructions = array_key_exists('instructions', $tools[0]['function']['arguments']) ? $tools[0]['function']['arguments']['instructions'] : '';
+            $category =
+                preg_replace('/[^A-Za-z0-9\-\s]/', '', strtolower($tools[0]['function']['arguments']['category'])) ?? 'unknown' . now()->year;
 
             $this->processingMessages[] = ['✅' => 'Message classified successfully'];
             Log::info("Category: $category");
@@ -197,8 +199,8 @@ trait Processable
      */
     private function categorizeMessage($id, $category)
     {
-        $this->processingMessages[] = ["✅" => "Categorising message on $category"];
         if (strtolower($category) === 'inbox') return;
+        $this->processingMessages[] = ["🎯" => "Categorizing message on $category"];
 
 
         // connect the mailbox
@@ -210,9 +212,18 @@ trait Processable
 
         // get the first mailbox that matches the category
         $mailboxPath = $this->findMailboxMatching($mailBoxes, $category);
+
+        Log::info("👉 $category");
         if (!$mailboxPath) {
-            $mailbox->createMailbox('INBOX.' . $category);
-            $mailboxPath = 'INBOX.' . $category;
+
+            try {
+                //code...
+                $mailbox->createMailbox(Str::slug($category));
+                $mailboxPath = 'INBOX.' . $category;
+            } catch (\Throwable $th) {
+                Log::error('❌', ['message' => $th->getMessage()]);
+                $this->processingMessages[] = ["❌" => 'The mailbox could not be created'];
+            }
         }
 
         //dd([...$mailboxCategory]);

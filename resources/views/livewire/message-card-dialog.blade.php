@@ -11,6 +11,7 @@
             </h3>
 
             <div class="my-2">
+                {{-- Process message button --}}
                 <button
                     class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
                     wire:click="processMessage('{{ $message['message_identifier'] ?? null }}')"
@@ -40,8 +41,8 @@
                     </span>
                 </button>
             </div>
-            {{-- /Process message button --}}
-            <button popovertarget="message-card-popover"
+
+            <button wire:click="$dispatch('clean-dialog')" popovertarget="message-card-popover"
                 popovertargetaction="hide"
                 class="absolute end-2 top-2 px-4 py-2 rounded bg-gray-200 text-gray-600 hover:bg-gray-100 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 focus:outline-none focus:shadow-outline">
                 <i class="bi bi-x"></i>
@@ -83,8 +84,8 @@
                 @include('partials.message.available-replies')
             </div>
         </div>
-        <div class="hidden" wire:loading.class.remove="hidden">
-            Loading message card
+        <div class="hidden" wire:loading.class.remove="hidden" wire:transition>
+            ⌛ Loading message card
         </div>
 
     </dialog>

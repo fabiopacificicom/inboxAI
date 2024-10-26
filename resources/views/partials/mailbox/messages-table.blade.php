@@ -102,7 +102,7 @@
                             </span>
                         </button>
 
-                        {{-- Open Dialog Modal Button (this triggers the MessagesListComponent methods) --}}
+                        {{-- Dialog Modal Button (this triggers the MessagesListComponent methods) --}}
                         <button
                             wire:click="fetchMessage({{$message->message_identifier}})"
                             popovertarget="message-card-popover"
@@ -164,7 +164,8 @@
         </tfoot>
     </table>
 
-    <livewire:message-card-dialog></livewire:message-card-dialog>
+    {{-- Dialog Modal Button Body --}}
+    <livewire:message-card-dialog id="message-card-popover"></livewire:message-card-dialog>
     <!-- /.dialog-modal -->
 
 
