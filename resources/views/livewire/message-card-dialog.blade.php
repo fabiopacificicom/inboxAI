@@ -53,36 +53,39 @@
         {{-- /.modal-header --}}
 
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
+        <div class="container" wire:loading.class="hidden" wire:transition>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
 
-                @include('partials.message.metadata-received-message')
+                    @include('partials.message.metadata-received-message')
 
-                @include('partials.message.received-message')
+                    @include('partials.message.received-message')
+                </div>
+
+                <div wire:key="message-{{ now()->timestamp }}" class="mt-4">
+                    @livewire(
+                    'ai-reply.reply-form-component',
+                    [
+                    'message' => $message,
+                    ],
+                    key(now()->timestamp)
+                    )
+
+                </div>
+
+                {{-- /Livewire ai-reply.reply-form-component --}}
             </div>
 
-            <div wire:key="message-{{ now()->timestamp }}" class="mt-4">
-                @livewire(
-                'ai-reply.reply-form-component',
-                [
-                'message' => $message,
-                ],
-                key(now()->timestamp)
-                )
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                @include('partials.processing-messages')
 
+
+                @include('partials.message.available-replies')
             </div>
-
-            {{-- /Livewire ai-reply.reply-form-component --}}
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            @include('partials.processing-messages')
-
-
-            @include('partials.message.available-replies')
+        <div class="hidden" wire:loading.class.remove="hidden">
+            Loading message card
         </div>
-
-
 
     </dialog>
 </div>

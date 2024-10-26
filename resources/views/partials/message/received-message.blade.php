@@ -11,7 +11,7 @@
          $message_identifier =
          'emailIframe-' . md5($message['message_identifier']);
          @endphp
-         <div class="overflow-y-auto"
+         <div class="overflow-y-auto max-h-64"
              id="wrapper-{{ $message_identifier }}">
              {{ $message['content'] }}
          </div>
