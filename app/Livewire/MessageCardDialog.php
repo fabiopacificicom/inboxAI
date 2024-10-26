@@ -21,7 +21,7 @@ class MessageCardDialog extends Component
 
     public $message;
     public $settings;
-
+    public $id = 'message-card-popover';
     public function mount()
     {
         $this->settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {

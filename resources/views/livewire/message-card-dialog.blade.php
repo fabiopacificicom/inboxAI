@@ -1,6 +1,6 @@
 <div>
 
-    <dialog popover id="message-card-popover"
+    <dialog popover id="{{$id}}"
         class="max-w-7xl m-auto bg-white dark:bg-slate-800 dark:text-slate-300 border dark:border-slate-700 p-6 rounded-lg shadow-xl max-h-screen overflow-y-auto">
 
 

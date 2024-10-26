@@ -110,7 +110,7 @@ class MessageListComponent extends Component
     {
 
         $this->dispatch('fetch-message', $id)->to(MessageCardDialog::class);
-
+        Log::info('Fetching message: ' . $id . '... event dispatched to the MessageCardDialog component');
 
         /*   //dd($id);
         //$this->loading = true;

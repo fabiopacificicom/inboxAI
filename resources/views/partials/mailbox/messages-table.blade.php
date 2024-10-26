@@ -22,10 +22,12 @@
                 </th>
             </tr>
         </thead>
+
         <tbody>
             @if(!$messages == null)
             @forelse ($messages as $index => $message)
             <tr wire:key="{{ $message['message_identifier'] }}">
+
                 <td class="w-24 px-5 py-5 border-b border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 text-sm">
                     {{ \Carbon\Carbon::parse($message['date'])->diffForHumans() }}
                 </td>
@@ -66,6 +68,7 @@
 
                     <div class="flex flex-wrap gap-1 justify-end">
 
+                        {{-- Process message button --}}
                         <button id="process-message{{$message['message_identifier']}}"
                             title="Process message"
                             class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-950 focus:outline-none focus:shadow-outline relative"
@@ -98,9 +101,8 @@
                                 In progress
                             </span>
                         </button>
-                        {{-- /Process message button --}}
 
-
+                        {{-- Open Dialog Modal Button (this triggers the MessagesListComponent methods) --}}
                         <button
                             wire:click="fetchMessage({{$message->message_identifier}})"
                             popovertarget="message-card-popover"
@@ -111,14 +113,13 @@
                                 Open
                             </span>
                         </button>
-                        <!-- /.message-card-button -->
 
-
-
+                        <!-- Remove this partial commented below if the livewire:message-card-dialog component works  -->
                         {{-- @include('partials.message.dialog-modal')--}}
                     </div>
 
                 </td>
+                {{-- /actions --}}
             </tr>
             @empty
             <tr>
@@ -163,6 +164,8 @@
         </tfoot>
     </table>
 
-    {{-- <livewire:message-card-dialog></livewire:message-card-dialog> --}}
+    <livewire:message-card-dialog></livewire:message-card-dialog>
+    <!-- /.dialog-modal -->
+
 
 </div>
