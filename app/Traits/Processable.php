@@ -211,8 +211,8 @@ trait Processable
         // get the first mailbox that matches the category
         $mailboxPath = $this->findMailboxMatching($mailBoxes, $category);
         if (!$mailboxPath) {
-            $mailbox->createMailbox('INBOX' . $category);
-            $mailboxPath = 'INBOX' . $category;
+            $mailbox->createMailbox('INBOX.' . $category);
+            $mailboxPath = 'INBOX.' . $category;
         }
 
         //dd([...$mailboxCategory]);
@@ -232,8 +232,9 @@ trait Processable
      * @param $category
      * @return void
      */
-    private function performActions($action, $instructions, $messageId, $settings = null)
+    private function performActions($action, $instructions, $messageId, $settings = null): string
     {
+        //dd($action, $instructions, $messageId, $settings);
         /*  //dd($action, $instructions, $messageId, $settings);
         if (!$action) {
             return back()->with('reply-generated', 'No action required.');
