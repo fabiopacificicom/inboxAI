@@ -114,7 +114,8 @@
                         <!-- /.message-card-button -->
 
 
-                        {{-- <!-- @include('partials.message.dialog-modal') --> --}}
+
+                        {{-- @include('partials.message.dialog-modal')--}}
                     </div>
 
                 </td>
@@ -162,6 +163,6 @@
         </tfoot>
     </table>
 
-    <livewire:message-card-dialog></livewire:message-card-dialog>
+    {{-- <livewire:message-card-dialog></livewire:message-card-dialog> --}}
 
 </div>
