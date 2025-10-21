@@ -2,22 +2,26 @@
 
 namespace App\Livewire\AiReply;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\Setting;
 use Livewire\Attributes\Modelable;
-
 use Livewire\Component;
 
 class OllamaSettings extends Component
 {
-
     public $models;
+
     #[Modelable]
     public $selectedModel;
+
     public $assistantSystem;
+
     public $ollamaServerAddress;
+
     public $connectionError = false;
+
+    public $successMessage = '';
 
     public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem)
     {
@@ -42,6 +46,7 @@ class OllamaSettings extends Component
     public function getModels()
     {
         $response = Http::get(config('responder.assistant.tags'));
+
         return $response->json();
     }
 
@@ -51,7 +56,6 @@ class OllamaSettings extends Component
         //dd($name);
         Setting::updateOrCreate(['key' => $name], ['value' => $value]);
 
-
         //dd($setting, $name, $value);
         if ($name === 'ollamaServerAddress') {
             // test the connection
@@ -59,10 +63,12 @@ class OllamaSettings extends Component
             // save in the settings table
         }
 
+        // Set success message
+        $this->successMessage = 'Settings saved successfully';
+
         //dd(Setting::all());
 
     }
-
 
     public function checkOllamaConnection($address)
     {
