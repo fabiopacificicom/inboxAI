@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Crypt;
 
 test('account can be created with encrypted credentials', function () {
     $user = User::factory()->create();
-    
+
     $account = Account::create([
         'user_id' => $user->id,
         'name' => 'Test Account',
@@ -23,18 +23,18 @@ test('account can be created with encrypted credentials', function () {
         ->and($account->name)->toBe('Test Account')
         ->and($account->email)->toBe('test@example.com')
         ->and($account->is_active)->toBeTrue();
-    
+
     // Verify password is encrypted in database
     $storedPassword = $account->getAttributes()['imap_password'];
     expect($storedPassword)->not->toBe('secret_password');
-    
+
     // Verify password decrypts correctly
     expect($account->imap_password)->toBe('secret_password');
 });
 
 test('account belongs to user', function () {
     $user = User::factory()->create();
-    
+
     $account = Account::create([
         'user_id' => $user->id,
         'name' => 'Test Account',
@@ -51,7 +51,7 @@ test('account belongs to user', function () {
 
 test('account has many messages', function () {
     $user = User::factory()->create();
-    
+
     $account = Account::create([
         'user_id' => $user->id,
         'name' => 'Test Account',
@@ -79,7 +79,7 @@ test('account has many messages', function () {
 
 test('smtp password is encrypted', function () {
     $user = User::factory()->create();
-    
+
     $account = Account::create([
         'user_id' => $user->id,
         'name' => 'Test Account',
@@ -96,16 +96,16 @@ test('smtp password is encrypted', function () {
     // Verify SMTP password is encrypted in database
     $storedSmtpPassword = $account->getAttributes()['smtp_password'];
     expect($storedSmtpPassword)->not->toBe('smtp_secret');
-    
+
     // Verify password decrypts correctly
     expect($account->smtp_password)->toBe('smtp_secret');
 });
 
 test('account settings are cast to array', function () {
     $user = User::factory()->create();
-    
+
     $settings = ['auto_process' => true, 'sync_interval' => 5];
-    
+
     $account = Account::create([
         'user_id' => $user->id,
         'name' => 'Test Account',

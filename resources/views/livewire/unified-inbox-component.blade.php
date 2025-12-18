@@ -16,7 +16,7 @@
         </div>
 
         <div class="p-6">
-            @if ($messages->count() > 0)
+            @if ($messages?->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -50,7 +50,7 @@
                                         {{ str_replace('INBOX.', '', $message->mailbox_folder) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button wire:click="processMessage({{ $message->id }})" 
+                                        <button wire:click="processMessage({{ $message->id }})"
                                                 class="text-blue-600 hover:text-blue-900">
                                             Process
                                         </button>
@@ -60,7 +60,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     {{ $messages->links() }}
                 </div>

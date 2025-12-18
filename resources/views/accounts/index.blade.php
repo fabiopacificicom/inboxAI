@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 @livewire('accounts.account-list-component')
             </div>
-            
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 @livewire('accounts.account-form-component')
             </div>
