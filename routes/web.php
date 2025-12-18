@@ -67,7 +67,11 @@ Route::middleware('auth')->group(function () {
 
     // Unified inbox route
     Route::get('/unified-inbox', function () {
-        return view('inbox.unified');
+        $settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {
+            return [$item['key'] => $item['value']];
+        });
+        
+        return view('inbox.unified', compact('settings'));
     })->name('inbox.unified');
 });
 

@@ -12,7 +12,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * This migration creates an Account record from the existing IMAP configuration
      * (stored in config/responder.php and .env) and links all existing messages
      * to this account.
@@ -20,7 +20,7 @@ return new class extends Migration
     public function up(): void
     {
         $imapConfig = config('responder.imap');
-        
+
         // Only proceed if IMAP config exists
         if (empty($imapConfig['username']) || empty($imapConfig['server'])) {
             Log::info('⏭️ No existing IMAP config found, skipping migration');
@@ -29,7 +29,7 @@ return new class extends Migration
 
         // Get the first user (assuming single-user app initially)
         $user = User::first();
-        
+
         if (!$user) {
             Log::warning('⚠️ No users found, cannot migrate IMAP config to account');
             return;
