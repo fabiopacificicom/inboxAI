@@ -10,6 +10,9 @@
 
         <div class="flex items-center gap-3">
             <div class="text-xs text-gray-500 dark:text-slate-400">Connected accounts: {{ \App\Models\Account::where('is_active', true)->count() }}</div>
+            <button type="button" wire:click="toggleSettingsModal" class="text-xs px-3 py-1 rounded-md border border-gray-200 dark:border-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700">
+                <i class="bi bi-gear-wide-connected mr-1"></i>Settings
+            </button>
             <button type="button" wire:click="startNewConversation" class="text-xs px-3 py-1 rounded-md border border-gray-200 dark:border-slate-700 dark:text-slate-200">New chat</button>
         </div>
     </div>
@@ -81,4 +84,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Settings Modal -->
+    @if($showSettingsModal)
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" wire:click="toggleSettingsModal">
+            <div class="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto" wire:click.stop>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold dark:text-slate-100">Chat Settings</h3>
+                    <button type="button" wire:click="toggleSettingsModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Model Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">AI Model</label>
+                    <div class="flex gap-2">
+                        <select wire:model="chatModel" class="flex-1 border rounded-md p-2 dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                            <option value="">Use default ({{ $this->assistantModel() }})</option>
+                            @foreach($availableModels as $model)
+                                <option value="{{ $model['name'] }}">{{ $model['name'] }}</option>
+                            @endforeach
+                        </select>
+                        <button type="button" wire:click="loadAvailableModels" class="px-3 py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 dark:border-slate-600">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    @if($connectionError)
+                        <p class="text-xs text-red-500 mt-1">Unable to connect to Ollama server</p>
+                    @endif
+                </div>
+
+                <!-- System Prompt -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">System Prompt</label>
+                    <textarea wire:model="chatSystemPrompt" rows="6" placeholder="Custom system prompt for this chat..." class="w-full border rounded-md p-3 dark:bg-slate-700 dark:text-white dark:border-slate-600"></textarea>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Leave empty to use the default system prompt</p>
+                </div>
+
+                <!-- Available Tools -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Available Tools</label>
+                    <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded-md p-3 dark:border-slate-600">
+                        @foreach($this->getTools() as $tool)
+                            @php $toolName = $tool['function']['name']; @endphp
+                            <label class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700">
+                                <input type="checkbox" 
+                                    wire:model="enabledTools.{{ $toolName }}"
+                                    class="mt-1 rounded border-gray-300 dark:border-slate-600 dark:bg-slate-700">
+                                <div class="flex-1">
+                                    <div class="font-medium text-sm dark:text-slate-100">{{ $toolName }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-slate-400">{{ $tool['function']['description'] }}</div>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2 justify-end">
+                    <button type="button" wire:click="toggleSettingsModal" class="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 dark:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="button" wire:click="saveChatSettings" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

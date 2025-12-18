@@ -9,6 +9,7 @@ use App\Traits\HasToolAccess;
 use App\Models\Setting;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -19,6 +20,12 @@ class ChatWindowComponent extends Component
 
     public ?int $activeConversationId = null;
     public string $userInput = '';
+    public string $chatModel = '';
+    public string $chatSystemPrompt = '';
+    public array $enabledTools = [];
+    public bool $showSettingsModal = false;
+    public array $availableModels = [];
+    public bool $connectionError = false;
 
     public function mount(): void
     {
@@ -26,6 +33,8 @@ class ChatWindowComponent extends Component
             ->where('user_id', Auth::id())
             ->latest('updated_at')
             ->value('id');
+        
+        $this->loadChatSettings();
     }
 
     public function selectConversation(int $conversationId): void
@@ -37,6 +46,63 @@ class ChatWindowComponent extends Component
     {
         $this->activeConversationId = null;
         $this->userInput = '';
+    }
+
+    public function toggleSettingsModal(): void
+    {
+        $this->showSettingsModal = !$this->showSettingsModal;
+        if ($this->showSettingsModal) {
+            $this->loadAvailableModels();
+        }
+    }
+
+    public function saveChatSettings(): void
+    {
+        Setting::updateOrCreate(['key' => 'chatModel'], ['value' => $this->chatModel]);
+        Setting::updateOrCreate(['key' => 'chatSystemPrompt'], ['value' => $this->chatSystemPrompt]);
+        Setting::updateOrCreate(['key' => 'enabledTools'], ['value' => json_encode($this->enabledTools)]);
+        
+        $this->showSettingsModal = false;
+        session()->flash('message', 'Chat settings saved successfully!');
+    }
+
+    public function loadChatSettings(): void
+    {
+        $this->chatModel = Setting::where('key', 'chatModel')->first()?->value 
+            ?? $this->assistantModel();
+        
+        $this->chatSystemPrompt = Setting::where('key', 'chatSystemPrompt')->first()?->value 
+            ?? $this->systemPrompt();
+            
+        $enabledToolsSetting = Setting::where('key', 'enabledTools')->first()?->value;
+        $this->enabledTools = $enabledToolsSetting ? json_decode($enabledToolsSetting, true) : $this->getDefaultEnabledTools();
+    }
+
+    public function loadAvailableModels(): void
+    {
+        try {
+            $serverAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value 
+                ?? config('responder.assistant.server');
+            
+            $response = Http::timeout(5000)
+                ->withHeader('x-access-token', config('responder.assistant.server_api_token'))
+                ->get($serverAddress . config('responder.assistant.tags'));
+            
+            $this->availableModels = $response->json()['models'] ?? [];
+            $this->connectionError = false;
+        } catch (\Throwable $e) {
+            $this->connectionError = true;
+            Log::error('Failed to load available models', ['error' => $e->getMessage()]);
+            $this->availableModels = [];
+        }
+    }
+
+    public function getDefaultEnabledTools(): array
+    {
+        return collect($this->getTools())
+            ->pluck('function.name')
+            ->mapWithKeys(fn($tool) => [$tool => true])
+            ->toArray();
     }
 
     public function sendMessage(): void
@@ -129,10 +195,10 @@ class ChatWindowComponent extends Component
         )->all();
 
         $payload = [
-            'model' => $this->assistantModel(),
+            'model' => $this->chatModel ?: $this->assistantModel(),
             'stream' => false,
             'messages' => $messages,
-            'tools' => $this->getTools(),
+            'tools' => $this->getEnabledTools(),
         ];
 
         $resp = $this->getResponse($payload);
@@ -149,7 +215,7 @@ class ChatWindowComponent extends Component
             foreach ($toolCalls as $call) {
                 $toolName = (string) data_get($call, 'function.name', '');
                 $arguments = data_get($call, 'function.arguments', []);
-                if ($toolName === '') {
+                if ($toolName === '' || !($this->enabledTools[$toolName] ?? true)) {
                     continue;
                 }
 
@@ -169,7 +235,7 @@ class ChatWindowComponent extends Component
             }
 
             $followUp = [
-                'model' => $this->assistantModel(),
+                'model' => $this->chatModel ?: $this->assistantModel(),
                 'stream' => false,
                 'messages' => array_merge(
                     [
@@ -196,6 +262,10 @@ class ChatWindowComponent extends Component
 
     private function systemPrompt(): string
     {
+        if (!empty($this->chatSystemPrompt)) {
+            return $this->chatSystemPrompt;
+        }
+        
         $base = Setting::where('key', 'assistantSystem')->first()?->value
             ?? config('responder.assistant.system');
 
@@ -213,6 +283,16 @@ class ChatWindowComponent extends Component
     {
         return Setting::where('key', 'selectedModel')->first()?->value
             ?? config('responder.assistant.model');
+    }
+
+    private function getEnabledTools(): array
+    {
+        $allTools = $this->getTools();
+        
+        return array_filter($allTools, function($tool) {
+            $toolName = $tool['function']['name'] ?? null;
+            return $toolName && ($this->enabledTools[$toolName] ?? true);
+        });
     }
 
     private function toolFollowupPrompt(): string
