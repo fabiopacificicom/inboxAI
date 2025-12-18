@@ -33,9 +33,9 @@ class VerifyAccountsCommand extends Command
         $this->newLine();
 
         $this->info('=== Account Details ===');
-        
+
         $accounts = Account::withCount('messages')->get();
-        
+
         foreach ($accounts as $account) {
             $this->info("📧 {$account->name} ({$account->email})");
             $this->line("   Messages: {$account->messages_count}");

@@ -1,6 +1,21 @@
 <header id="top_toolbar" class="flex justify-between py-4 px-2">
 
     <div class="flex gap-1 items-center">
+        {{-- Account Selector --}}
+        <div class="account-selector mr-2">
+            <label for="account-select" class="sr-only">Select Account</label>
+            <select id="account-select" 
+                    wire:model.live="selectedAccountId"
+                    class="p-2 border border-gray-300 dark:bg-slate-900 dark:text-white dark:border-slate-950 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">📬 All Inboxes</option>
+                @foreach($accounts as $account)
+                    <option value="{{ $account->id }}">
+                        {{ $account->name }} ({{ $account->email }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         <button type="button" wire:click="refreshMessages()" class="bg-gray-100 hover:bg-gray-300 dark:bg-slate-900 dark:hover:bg-slate-700 p-2 rounded-lg m-1">
             <i class="bi bi-arrow-clockwise"></i>
             <span class="hidden sm:text-xs md:text-sm">

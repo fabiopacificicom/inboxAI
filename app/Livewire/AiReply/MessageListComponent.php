@@ -4,6 +4,7 @@ namespace App\Livewire\AiReply;
 
 use App\Livewire\MessageCardDialog;
 use App\Models\Message;
+use App\Models\Account;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -24,6 +25,8 @@ class MessageListComponent extends Component
     public $settings;
     public $limit;
     public $period;
+    public $accounts = [];
+    public $selectedAccountId = null; // null = All Inboxes
 
     /**
      * Livewire: mouth method
@@ -46,9 +49,12 @@ class MessageListComponent extends Component
         $this->period = $settings['filter'] ?? 'day';
         $this->limit = $settings['limit'] ?? 15;
 
+        // Load all accounts
+        $this->loadAccounts();
+
         // retrieve the messages
         //dd(Cache::get('messages'));
-        $this->messages = Cache::get('messages') ?? $this->retreiveLatestMessages();
+        $this->messages = $this->retreiveLatestMessages();
         //dd('here');
         //Log::info('MessageListComponent Mounted with ' . $this->messages->count() . ' messages.');
     }
@@ -77,6 +83,25 @@ class MessageListComponent extends Component
         }
     }
 
+    /**
+     * Load all accounts for the account selector
+     */
+    private function loadAccounts()
+    {
+        $this->accounts = Account::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Switch to a different account or show all inboxes
+     * @param int|null $accountId - null for All Inboxes, or specific account ID
+     */
+    public function switchAccount($accountId = null)
+    {
+        $this->selectedAccountId = $accountId;
+        $this->messages = $this->retreiveLatestMessages();
+    }
 
 
     /* public function setReplyContent($content)
@@ -97,6 +122,7 @@ class MessageListComponent extends Component
     public function refreshMessages()
     {
         Cache::purge('messages');
+        $this->messages = $this->retreiveLatestMessages();
         $this->dispatch('sync-mailbox');
     }
 
@@ -278,15 +304,28 @@ class MessageListComponent extends Component
 
     /**
      * Retreive the latest messages from the db
+     * Filters by selected account if specified, otherwise shows all active accounts
      */
     private function retreiveLatestMessages()
     {
         $limit = $this->settings['limit'] ?? 20;
-        $messages = Message::with('replies')->orderByDesc('date')->take($limit)->get();
+        
+        $query = Message::with(['replies', 'account']);
+        
+        // Filter by selected account or all active accounts
+        if ($this->selectedAccountId) {
+            // Show messages from specific account
+            $query->where('account_id', $this->selectedAccountId);
+        } else {
+            // Show messages from all active accounts (unified inbox)
+            $query->whereHas('account', function($q) {
+                $q->where('is_active', true);
+            });
+        }
+        
+        $messages = $query->orderByDesc('date')->take($limit)->get();
         //dd($messages);
-        // Update the cache with the retrieved and limited messages
-        Cache::forever('messages', $messages);
-
+        
         return $messages;
     }
 

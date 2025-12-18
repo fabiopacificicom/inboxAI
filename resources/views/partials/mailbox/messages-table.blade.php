@@ -36,6 +36,14 @@
                     <p>
                         {{ $message['subject'] }}
                     </p>
+                    
+                    {{-- Show account badge when viewing All Inboxes --}}
+                    @if(!$selectedAccountId && $message->account)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-2">
+                            📧 {{ $message->account->name }}
+                        </span>
+                    @endif
+                    
                     <small class="text-xs"><em>From:</em></small> {{ $message['from'] }} <br>
 
                 </td>

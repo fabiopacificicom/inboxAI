@@ -12,7 +12,7 @@ class AccountsAndMessagesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Creates 2 additional fake accounts with 15 messages each
      * to test unified inbox and account switching functionality.
      */
@@ -85,7 +85,7 @@ class AccountsAndMessagesSeeder extends Seeder
     private function createMessagesForAccount(Account $account): void
     {
         $messageCount = 15;
-        
+
         // Different email categories for variety
         $categories = [
             'work' => [
@@ -147,7 +147,7 @@ class AccountsAndMessagesSeeder extends Seeder
             $subject = fake()->randomElement($category['subjects']);
             $sender = fake()->randomElement($category['senders']);
             $from = fake()->name() . " <{$sender}>";
-            
+
             // Generate realistic email content
             $content = $this->generateEmailContent($subject, $categoryKey);
 
