@@ -1,9 +1,11 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 
-.modal-backdrop {
+.modal-backdrop
+{
     position: fixed;
     top: 0;
     left: 0;
@@ -12,7 +14,8 @@
     background-color: rgba(0, 0, 0, 0.731)
 }
 
-.modal-card {
+.modal-card
+{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -20,7 +23,60 @@
     max-width: 900px;
     margin: auto;
     padding: 1rem;
-    background-color: white;
-    border: 1px solid gray;
+    background-color: light-dark(white, black);
+    border: 1px solid light-dark(gray, #333333);
     border-radius: 1rem;
+}
+
+::backdrop
+{
+    backdrop-filter: blur(0.1rem);
+}
+
+dialog#settings
+{
+    @apply shadow-lg rounded-md;
+    width: 90%;
+    max-width: 1176px;
+    margin: auto;
+    padding: 2.5rem;
+    border: 1px solid rgb(187, 187, 187);
+    border-radius: 0.5rem;
+    overflow-y: auto;
+    max-height: 90dvh;
+
+    @media (max-width: 420px)
+    {
+        max-height: 100dvh;
+    }
+
+
+
+    /* Change the default scrollbar size and color to a tiny one light gray */
+    &::-webkit-scrollbar,
+    & textarea::-webkit-scrollbar
+    {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-track,
+    & textarea::-webkit-scrollbar-track
+    {
+        background-color: #cecece;
+        border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb,
+    & textarea::-webkit-scrollbar-thumb
+    {
+        background-color: #444444;
+        border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover,
+    & textarea::-webkit-scrollbar-thumb:hover
+    {
+        background-color: #333333;
+    }
+
 }

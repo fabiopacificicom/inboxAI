@@ -15,23 +15,21 @@ class OllamaSettings extends Component
     public $models;
     #[Modelable]
     public $selectedModel;
+    #[Modelable]
+    public $selectedClassifier;
+
     public $assistantSystem;
+    public $classifierSystem;
     public $ollamaServerAddress;
     public $connectionError = false;
 
-    public function mount($ollamaServerAddress, $models, $selectedModel, $assistantSystem)
+    public function mount($ollamaServerAddress, $selectedModel, $assistantSystem, $classifierSystem, $selectedClassifier)
     {
         $this->ollamaServerAddress = $ollamaServerAddress;
-        $this->models = $models;
+        $this->models = $this->getModels();
         $this->selectedModel = $selectedModel;
         $this->assistantSystem = $assistantSystem;
-
-        /* $this->ollamaServerAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server');
-        $this->models = $this->getModels();
-        $this->selectedModel = Setting::where('key', 'selectedModel')->first()?->value ?? config('responder.assistant.model');
-        $this->assistantSystem = Setting::where('key', 'assistantSystem')->first()?->value ?? config('responder.assistant.system');
- */
-        //dd($this->ollamaServerAddress);
+        $this->classifierSystem = $classifierSystem;
     }
 
     public function render()
@@ -41,9 +39,40 @@ class OllamaSettings extends Component
 
     public function getModels()
     {
-        $response = Http::get(config('responder.assistant.tags'));
-        return $response->json();
+
+        // retrieve the server address
+        $server_address = $this->ollamaServerAddress . config('responder.assistant.tags');
+        // get the access token incase required
+        $accessToken = config('responder.assistant.server_api_token');
+        // try to get the models from the server
+
+        //dd($server_address, $accessToken);
+        try {
+            // return the response from the server as a json
+            return Http::timeout(5000)
+                ->withHeader('x-access-token', $accessToken)
+                ->get($server_address)
+                ->json();
+            // set the connection error to false
+            $this->connectionError = false;
+        } catch (\Throwable $th) {
+            session()->flash('message', $th->getMessage());
+            $this->connectionError = true;
+            Log::error($th->getMessage());
+            return false;
+        }
     }
+
+
+    public function refreshModels()
+    {
+
+        //dd(config('responder.assistant.tags'), $this->ollamaServerAddress);
+        $this->models = $this->getModels();
+        //dd($this->models);
+        $this->dispatch('models-updated')->self();
+    }
+
 
     public function updated($name, $value)
     {
@@ -54,13 +83,14 @@ class OllamaSettings extends Component
 
         //dd($setting, $name, $value);
         if ($name === 'ollamaServerAddress') {
+            //dd($name, $value);
             // test the connection
             $this->checkOllamaConnection($value);
+
             // save in the settings table
+            // update the models list
+            $this->models = $this->getModels();
         }
-
-        //dd(Setting::all());
-
     }
 
 
@@ -70,7 +100,7 @@ class OllamaSettings extends Component
             $response = Http::get($address);
             $this->connectionError = false;
         } catch (\Throwable $th) {
-            $this->connectionError = 'Connection Failed. Check the logs for more details.';
+            $this->connectionError = true;
             Log::error($th->getMessage());
         }
     }

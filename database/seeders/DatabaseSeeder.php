@@ -19,5 +19,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed fake accounts and messages for testing unified inbox
+        $this->call([
+            AccountsAndMessagesSeeder::class,
+        ]);
     }
 }

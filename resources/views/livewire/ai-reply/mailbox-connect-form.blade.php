@@ -7,6 +7,7 @@
     @endif
 
 
+
     <div id="settings" x-data="{ open: false }">
         <div class="flex justify-between items-center mb-4">
 
@@ -125,7 +126,10 @@
     </div>
     {{-- /#settings --}}
 
-    <div id="reply-area" class="p-4 bg-white shadow-md rounded-lg">
+
+
+
+    <div id="reply-area" class="p-4 bg-white shadow-md rounded-lg lg:max-w-7xl md:max-w-3xl w-full">
         {{-- Reply form --}}
         @if (array_key_exists('message', $reply) && array_key_exists('content', $reply['message']))
             <div class="reply my-4">

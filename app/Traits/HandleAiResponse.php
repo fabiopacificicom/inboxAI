@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Traits;
+
+use Illuminate\Support\Facades\Http;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Log;
+
+trait HandleAiResponse
+{
+    /**
+     * Get the ollama response for the given payload
+     * @returns array the http response as an array
+     */
+    private function getResponse($payload, $tools = []): array
+    {
+
+        //dd($payload);
+
+        $response = Http::timeout(5000)->withHeader('x-access-token', config('responder.assistant.server_api_token'))
+            ->post((Setting::where('key', 'ollamaServerAddress')->first()?->value ?? config('responder.assistant.server')) . config('responder.assistant.chat'), $payload);
+
+
+        //dd($response->json());
+
+        $response->onError(function ($message) {
+            Log::error('❌ Error: ' . $message);
+            throw new \Exception($message, 1);
+        });
+
+        return $response->json();
+    }
+}

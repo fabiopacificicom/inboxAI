@@ -1,46 +1,38 @@
 <div>
 
 
-    <div x-data="{ open: false }" class="mb-4" x-bind:class="{ 'flex items-end justify-between': !open }">
+    <div class="ollama_settings flex items-end justify-end">
 
-
-        <button @click="open = !open"
-            class="flex items-center gap-2 bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
-            {{ __('Settings') }}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-sliders2-vertical" viewBox="0 0 16 16">
-                <path fill-rule="evenodd"
-                    d="M0 10.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1H3V1.5a.5.5 0 0 0-1 0V10H.5a.5.5 0 0 0-.5.5M2.5 12a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 1 0v-2a.5.5 0 0 0-.5-.5m3-6.5A.5.5 0 0 0 6 6h1.5v8.5a.5.5 0 0 0 1 0V6H10a.5.5 0 0 0 0-1H6a.5.5 0 0 0-.5.5M8 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 1 0v-2A.5.5 0 0 0 8 1m3 9.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1H14V1.5a.5.5 0 0 0-1 0V10h-1.5a.5.5 0 0 0-.5.5m2.5 1.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 1 0v-2a.5.5 0 0 0-.5-.5" />
+        @teleport('.tools')
+        <button
+            class="sticky top-0 right-0 flex items-center gap-2 p-3 text-gray-400 dark:hover:bg-slate-900 dark:hover:text-slate-300 rounded-lg hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+            popovertarget="settings" popoveraction="show">
+            {{ __('AI') }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars"
+                viewBox="0 0 16 16">
+                <path
+                    d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z" />
             </svg>
         </button>
-
-
-        <div id="ollama-settings" x-show="open" style="display: none;">
-
+        @endteleport
+        <dialog id="settings" popover class="bg-white dark:bg-slate-800 dark:border-slate-800 dark:text-slate-300">
             @livewire('ai-reply.ollama-settings', [
-                'selectedModel' => $selectedModel,
-                'assistantSystem' => $assistantSystem,
-                'models' => $models,
-                'ollamaServerAddress' => $ollamaServerAddress,
+            'selectedModel' => $selectedModel,
+            'selectedClassifier' => $selectedClassifier,
+            'assistantSystem' => $assistantSystem,
+            'classifierSystem' => $classifierSystem,
+            /* 'models' => $models, */
+            'ollamaServerAddress' => $ollamaServerAddress,
             ])
-
-
-        </div>
-
-        <hr class="my-3">
-
-
-        @livewire('ai-reply.mailbox-connection-component')
-
-
-
+        </dialog>
     </div>
 
 
     @livewire('ai-reply.message-list-component', [
-        'selectedModel' => $selectedModel,
-        'assistantSystem' => $assistantSystem,
-        'ollamaServerAddress' => $ollamaServerAddress,
+    'settings' => $settings,
+    'selectedModel' => $selectedModel,
+    'assistantSystem' => $assistantSystem,
+    'ollamaServerAddress' => $ollamaServerAddress,
     ])
 
 </div>
