@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title')->nullable(); // Auto-generated from first message
             $table->json('context')->nullable(); // Conversation memory
             $table->timestamps();
-            
+
             $table->index(['user_id', 'created_at']);
         });
     }

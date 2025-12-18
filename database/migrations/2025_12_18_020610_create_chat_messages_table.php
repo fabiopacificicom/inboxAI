@@ -19,7 +19,7 @@ return new class extends Migration
             $table->json('tool_calls')->nullable(); // Track which tools were used
             $table->json('metadata')->nullable(); // Account IDs, message IDs referenced
             $table->timestamps();
-            
+
             $table->index(['conversation_id', 'created_at']);
         });
     }
