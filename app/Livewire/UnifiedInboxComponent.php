@@ -48,13 +48,16 @@ class UnifiedInboxComponent extends Component
 
     public function loadAccounts()
     {
+        // Load active accounts ordered by creation date (first connected first)
         $this->accounts = Account::where('user_id', Auth::id())
             ->where('is_active', true)
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        // If the user only has one active account, default the unified inbox
-        // to that account so the UI shows the account messages by default.
-        if ($this->accounts->count() === 1 && is_null($this->selectedAccountId)) {
+        // If the user has at least one active account and no account is selected,
+        // default to the first (earliest connected) account so the unified inbox
+        // reflects the user's initial account by default.
+        if ($this->accounts->isNotEmpty() && is_null($this->selectedAccountId)) {
             $this->selectedAccountId = $this->accounts->first()->id;
         }
     }
