@@ -48,6 +48,13 @@ class AccountFormComponent extends Component
     {
         $this->reset();
         $this->accountId = $accountId;
+
+        // If accountId is null or empty, treat as "create new" and do not attempt to load a model
+        if (is_null($accountId) || $accountId === '') {
+            $this->isEditing = false;
+            return;
+        }
+
         $this->isEditing = true;
 
         $account = Account::findOrFail($accountId);
