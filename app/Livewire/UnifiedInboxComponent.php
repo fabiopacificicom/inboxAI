@@ -51,6 +51,12 @@ class UnifiedInboxComponent extends Component
         $this->accounts = Account::where('user_id', Auth::id())
             ->where('is_active', true)
             ->get();
+
+        // If the user only has one active account, default the unified inbox
+        // to that account so the UI shows the account messages by default.
+        if ($this->accounts->count() === 1 && is_null($this->selectedAccountId)) {
+            $this->selectedAccountId = $this->accounts->first()->id;
+        }
     }
 
     public function getMessagesProperty()
