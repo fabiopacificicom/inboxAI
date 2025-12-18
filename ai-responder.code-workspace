@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "U:/home/pacificdev/Projects/packages/ai-providers-for-laravel"
+		},
+		{
+			"path": "../../Projects/inboxAI/inboxAi-landingpage"
 		}
 	],
 	"settings": {}

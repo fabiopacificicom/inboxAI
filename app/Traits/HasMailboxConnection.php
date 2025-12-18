@@ -7,6 +7,7 @@ use PhpImap\Mailbox;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Message;
+use App\Models\Account;
 use Illuminate\Support\Carbon;
 use App\Livewire\AiReply\MessageListComponent;
 
@@ -20,19 +21,28 @@ trait HasMailboxConnection
     public $filter;
 
     /**
-     * Get the mailbox connection from the given settings.
+     * Get the mailbox connection from the given Account model or settings.
+     * @param Account|null $account the Account model to use for connection
      * @param array $settings the settings for the mailbox connection or use the default settings
      * @param string $inbox the inbox to connect to default is 'INBOX'
      * @return Mailbox
      */
 
-    public function makeMailboxFromSettings(array $settings = [], $inbox = 'INBOX'): Mailbox
+    public function makeMailboxFromSettings(?Account $account = null, array $settings = [], $inbox = 'INBOX'): Mailbox
     {
-        // get the mailbox settings from the parameters or use the default settings
-        $username = $settings['username'] ?? config('responder.imap.username');
-        $password = $settings['password'] ?? config('responder.imap.password');
-        $host = $settings['host'] ?? config('responder.imap.server');
-        $port = $settings['port'] ?? config('responder.imap.port');
+        // If Account model is provided, use it
+        if ($account) {
+            $username = $account->email;
+            $password = $account->imap_password;
+            $host = $account->imap_host;
+            $port = $account->imap_port;
+        } else {
+            // Fallback to settings array or config
+            $username = $settings['username'] ?? config('responder.imap.username');
+            $password = $settings['password'] ?? config('responder.imap.password');
+            $host = $settings['host'] ?? config('responder.imap.server');
+            $port = $settings['port'] ?? config('responder.imap.port');
+        }
 
         // connect to the IMAP server and open a connection
         return new Mailbox(
@@ -194,9 +204,10 @@ trait HasMailboxConnection
      * @param Mailbox $mailbox IMAP mailbox connection
      * @param array $mailsIds IMAP message ids
      * @param int $limit Maximum number of messages to fetch (optional) default 15;
+     * @param int|null $accountId The account ID for multi-account support (optional)
      * @return void
      */
-    public function fetchEmailMessages($mailbox, $mailsIds, $limit = 15)
+    public function fetchEmailMessages($mailbox, $mailsIds, $limit = 15, $accountId = null)
     {
         //dd($mailbox, $mailsIds);
 
@@ -214,9 +225,9 @@ trait HasMailboxConnection
             //dd($mailsIds);
 
             // Loop through emails one by one
-            Cache::remember('messages', now()->addDay(), function () use ($mailsIds, $mailbox) {
+            Cache::remember('messages', now()->addDay(), function () use ($mailsIds, $mailbox, $accountId) {
                 //dd($mailsIds);
-                return array_map(function ($num) use ($mailbox) {
+                return array_map(function ($num) use ($mailbox, $accountId) {
 
                     // TODO: Performance improvements:
                     // Update the implementation and start by just fetching the message headers
@@ -254,7 +265,7 @@ trait HasMailboxConnection
 
                     //dd($message['message_identifier'], $message);
 
-                    $messageObject = Message::updateOrCreate(['message_identifier' => $mail->id], [
+                    $messageData = [
                         'message_identifier' => intval($message['message_identifier']),
                         'subject' => $message['subject'],
                         'from' =>  $message['from'],
@@ -269,8 +280,14 @@ trait HasMailboxConnection
                         'is_deleted' => $message['is_deleted'],
                         'is_draft' => $message['is_draft'],
                         'mailbox_folder' => $message['mailbox_folder']
+                    ];
 
-                    ]);
+                    // Add account_id if provided (multi-account support)
+                    if ($accountId) {
+                        $messageData['account_id'] = $accountId;
+                    }
+
+                    $messageObject = Message::updateOrCreate(['message_identifier' => $mail->id], $messageData);
                     //dd($messageObject);
 
 

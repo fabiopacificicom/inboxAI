@@ -59,6 +59,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Account management routes
+    Route::get('/accounts', function () {
+        return view('accounts.index');
+    })->name('accounts.index');
+    
+    // Unified inbox route
+    Route::get('/unified-inbox', function () {
+        return view('inbox.unified');
+    })->name('inbox.unified');
 });
 
 require __DIR__ . '/auth.php';
