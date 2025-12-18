@@ -110,9 +110,9 @@ class UnifiedInboxComponent extends Component
 
     public function render()
     {
-        return view('livewire.unified-inbox-component', [
-            'messages' => $this->messages
-        ]);
+        // In Livewire 3, computed properties (getXxxProperty methods) are accessed without explicit call
+        // The view can access $messages directly and it will call getMessagesProperty() automatically
+        return view('livewire.unified-inbox-component');
     }
 }
 
