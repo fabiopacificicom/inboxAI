@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
         $settings = Setting::all(['key', 'value'])->mapWithKeys(function ($item) {
             return [$item['key'] => $item['value']];
         });
-        
+
         return view('inbox.unified', compact('settings'));
     })->name('inbox.unified');
 });
