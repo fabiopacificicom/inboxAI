@@ -309,9 +309,9 @@ class MessageListComponent extends Component
     private function retreiveLatestMessages()
     {
         $limit = $this->settings['limit'] ?? 20;
-        
+
         $query = Message::with(['replies', 'account']);
-        
+
         // Filter by selected account or all active accounts
         if ($this->selectedAccountId) {
             // Show messages from specific account
@@ -322,10 +322,10 @@ class MessageListComponent extends Component
                 $q->where('is_active', true);
             });
         }
-        
+
         $messages = $query->orderByDesc('date')->take($limit)->get();
         //dd($messages);
-        
+
         return $messages;
     }
 

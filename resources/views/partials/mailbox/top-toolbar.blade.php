@@ -4,7 +4,7 @@
         {{-- Account Selector --}}
         <div class="account-selector mr-2">
             <label for="account-select" class="sr-only">Select Account</label>
-            <select id="account-select" 
+            <select id="account-select"
                     wire:model.live="selectedAccountId"
                     class="p-2 border border-gray-300 dark:bg-slate-900 dark:text-white dark:border-slate-950 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">📬 All Inboxes</option>
