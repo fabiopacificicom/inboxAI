@@ -26,6 +26,10 @@ class ChatWindowComponent extends Component
     public bool $showSettingsModal = false;
     public array $availableModels = [];
     public bool $connectionError = false;
+    public bool $isProcessing = false;
+    public bool $showConversationList = false;
+    public ?int $editingMessageId = null;
+    public string $editingContent = '';
 
     public function mount(): void
     {
@@ -33,7 +37,7 @@ class ChatWindowComponent extends Component
             ->where('user_id', Auth::id())
             ->latest('updated_at')
             ->value('id');
-        
+
         $this->loadChatSettings();
     }
 
@@ -46,6 +50,13 @@ class ChatWindowComponent extends Component
     {
         $this->activeConversationId = null;
         $this->userInput = '';
+        $this->editingMessageId = null;
+        $this->editingContent = '';
+    }
+
+    public function toggleConversationList(): void
+    {
+        $this->showConversationList = !$this->showConversationList;
     }
 
     public function toggleSettingsModal(): void
@@ -59,21 +70,35 @@ class ChatWindowComponent extends Component
     public function saveChatSettings(): void
     {
         Setting::updateOrCreate(['key' => 'chatModel'], ['value' => $this->chatModel]);
+        // Keep global assistant model in sync with chat model selection
+        if (!empty($this->chatModel)) {
+            Setting::updateOrCreate(['key' => 'selectedModel'], ['value' => $this->chatModel]);
+        }
         Setting::updateOrCreate(['key' => 'chatSystemPrompt'], ['value' => $this->chatSystemPrompt]);
         Setting::updateOrCreate(['key' => 'enabledTools'], ['value' => json_encode($this->enabledTools)]);
-        
+
         $this->showSettingsModal = false;
         session()->flash('message', 'Chat settings saved successfully!');
     }
 
+    public function updatedChatModel(string $value): void
+    {
+        // Persist model selection immediately so it survives full page refreshes
+        Setting::updateOrCreate(['key' => 'chatModel'], ['value' => $value]);
+        // Also update the shared selectedModel used by other assistants/tools
+        if (!empty($value)) {
+            Setting::updateOrCreate(['key' => 'selectedModel'], ['value' => $value]);
+        }
+    }
+
     public function loadChatSettings(): void
     {
-        $this->chatModel = Setting::where('key', 'chatModel')->first()?->value 
+        $this->chatModel = Setting::where('key', 'chatModel')->first()?->value
             ?? $this->assistantModel();
-        
-        $this->chatSystemPrompt = Setting::where('key', 'chatSystemPrompt')->first()?->value 
+
+        $this->chatSystemPrompt = Setting::where('key', 'chatSystemPrompt')->first()?->value
             ?? $this->systemPrompt();
-            
+
         $enabledToolsSetting = Setting::where('key', 'enabledTools')->first()?->value;
         $this->enabledTools = $enabledToolsSetting ? json_decode($enabledToolsSetting, true) : $this->getDefaultEnabledTools();
     }
@@ -81,13 +106,13 @@ class ChatWindowComponent extends Component
     public function loadAvailableModels(): void
     {
         try {
-            $serverAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value 
+            $serverAddress = Setting::where('key', 'ollamaServerAddress')->first()?->value
                 ?? config('responder.assistant.server');
-            
+
             $response = Http::timeout(5000)
                 ->withHeader('x-access-token', config('responder.assistant.server_api_token'))
                 ->get($serverAddress . config('responder.assistant.tags'));
-            
+
             $this->availableModels = $response->json()['models'] ?? [];
             $this->connectionError = false;
         } catch (\Throwable $e) {
@@ -105,10 +130,75 @@ class ChatWindowComponent extends Component
             ->toArray();
     }
 
+    public function editMessage(int $messageId): void
+    {
+        $message = ChatMessage::query()
+            ->whereHas('conversation', fn($q) => $q->where('user_id', Auth::id()))
+            ->where('id', $messageId)
+            ->where('role', 'user')
+            ->first();
+
+        if ($message) {
+            $this->editingMessageId = $messageId;
+            $this->editingContent = $message->content;
+        }
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editingMessageId = null;
+        $this->editingContent = '';
+    }
+
+    public function saveEdit(): void
+    {
+        if (!$this->editingMessageId) {
+            return;
+        }
+
+        $message = ChatMessage::query()
+            ->whereHas('conversation', fn($q) => $q->where('user_id', Auth::id()))
+            ->where('id', $this->editingMessageId)
+            ->where('role', 'user')
+            ->first();
+
+        if ($message) {
+            $message->update(['content' => trim($this->editingContent)]);
+            $this->editingMessageId = null;
+            $this->editingContent = '';
+        }
+    }
+
+    public function deleteMessage(int $messageId): void
+    {
+        $message = ChatMessage::query()
+            ->whereHas('conversation', fn($q) => $q->where('user_id', Auth::id()))
+            ->where('id', $messageId)
+            ->first();
+
+        if ($message) {
+            // If deleting a user message, also delete the next assistant message if it exists
+            if ($message->role === 'user') {
+                $nextAssistant = ChatMessage::query()
+                    ->where('conversation_id', $message->conversation_id)
+                    ->where('role', 'assistant')
+                    ->where('id', '>', $messageId)
+                    ->orderBy('id')
+                    ->first();
+
+                if ($nextAssistant) {
+                    $nextAssistant->delete();
+                }
+            }
+
+            $message->delete();
+        }
+    }
+
     public function sendMessage(): void
     {
         $content = trim($this->userInput);
-        if ($content === '') {
+        if ($content === '' || $this->isProcessing) {
             return;
         }
 
@@ -117,6 +207,7 @@ class ChatWindowComponent extends Component
             return;
         }
 
+        $this->isProcessing = true;
         $conversation = $this->resolveConversation($userId);
 
         ChatMessage::create([
@@ -151,6 +242,7 @@ class ChatWindowComponent extends Component
         $conversation->generateTitle();
         $conversation->touch();
         $this->activeConversationId = $conversation->id;
+        $this->isProcessing = false;
     }
 
     private function resolveConversation(int $userId): Conversation
@@ -265,7 +357,7 @@ class ChatWindowComponent extends Component
         if (!empty($this->chatSystemPrompt)) {
             return $this->chatSystemPrompt;
         }
-        
+
         $base = Setting::where('key', 'assistantSystem')->first()?->value
             ?? config('responder.assistant.system');
 
@@ -288,7 +380,7 @@ class ChatWindowComponent extends Component
     private function getEnabledTools(): array
     {
         $allTools = $this->getTools();
-        
+
         return array_filter($allTools, function($tool) {
             $toolName = $tool['function']['name'] ?? null;
             return $toolName && ($this->enabledTools[$toolName] ?? true);
