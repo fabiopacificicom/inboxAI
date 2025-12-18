@@ -16,6 +16,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="dark:text-slate-400">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('inbox.unified')" :active="request()->routeIs('inbox.unified')" class="dark:text-slate-400">
+                        {{ __('Unified Inbox') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.index')" class="dark:text-slate-400">
+                        {{ __('Accounts') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -74,6 +80,12 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('inbox.unified')" :active="request()->routeIs('inbox.unified')">
+                {{ __('Unified Inbox') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.index')">
+                {{ __('Accounts') }}
             </x-responsive-nav-link>
         </div>
 
