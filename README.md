@@ -1,17 +1,36 @@
 # InboxAI
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/fabiopacificicom/inboxAI/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Use private LLM running locally to manage your inbox. It works with Ollama and open-source models like Meta's Llama3.1, Google's Gemma, IBM's granite-code, Microsoft's phi3 and more.
 
 Visit and download the desired models from the ollama website.
 
+📋 **[View Changelog](CHANGELOG.md)** | 🚀 **[Latest Release](https://github.com/fabiopacificicom/inboxAI/releases/tag/v1.0.0)**
+
 ## Features
 
-- [x] Connects with a custom maibox via SMTP
-- [x] Connects with the Ollama AI server
-- [x] Set AI Assistant and classifier to handles incoming messages
-- [x] Process the incoming messages and generate a reply
-- [x] Insert a Google Calendar Event if necessary
-- [x] Classify the incoming message ()
+### Core Email Management
+- [x] **Multi-Account Support** - Manage multiple IMAP/SMTP email accounts from one interface
+- [x] **Unified Inbox** - Centralized view across all connected accounts
+- [x] AI-powered email classification (Junk/Archive/Inbox/Trash)
+- [x] Automated reply generation with AI
+- [x] Insert Google Calendar events from email content
+- [x] Newsletter and email thread summarization
+
+### AI Integration
+- [x] Connects with Ollama AI server for local LLM processing
+- [x] **Conversational AI Interface** - Chat with your AI assistant in natural language
+- [x] Configurable AI Assistant and classifier models
+- [x] Knowledge Base with web scraping (experimental)
+- [x] Support for multiple models (Llama3.1, Gemma, Phi3, Granite Code)
+
+### User Experience
+- [x] **Profile Picture Upload** - Personalize your account
+- [x] Account switcher for quick navigation
+- [x] Cross-platform desktop app (Windows/macOS/Linux via NativePHP/Electron)
+- [x] Reactive UI with Livewire 3
 
 ## General Requirements
 
